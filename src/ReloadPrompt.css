@@ -1,0 +1,49 @@
+.ReloadPrompt-container {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ReloadPrompt-toast {
+  pointer-events: auto;
+  background: #2e7d32;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  max-width: 500px;
+}
+
+.ReloadPrompt-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.ReloadPrompt-toast-button {
+  background: #fff;
+  color: #2e7d32;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.ReloadPrompt-toast-button:hover {
+  background: #e8f5e9;
+}
