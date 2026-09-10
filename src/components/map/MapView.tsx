@@ -5,20 +5,14 @@ import './map-overlay.css'
 
 interface MapViewProps {
   onMapReady: (map: L.Map) => void
-  addMode: boolean
-  onMapClick: (latitude: number, longitude: number) => void
 }
 
-function MapView({ onMapReady, addMode, onMapClick }: MapViewProps) {
+function MapView({ onMapReady }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const onMapReadyRef = useRef(onMapReady)
-  const onMapClickRef = useRef(onMapClick)
-  const addModeRef = useRef(addMode)
 
   useEffect(() => {
     onMapReadyRef.current = onMapReady
-    onMapClickRef.current = onMapClick
-    addModeRef.current = addMode
   })
 
   useEffect(() => {
@@ -39,20 +33,12 @@ function MapView({ onMapReady, addMode, onMapClick }: MapViewProps) {
       },
     ).addTo(map)
 
-    map.on('click', (e: L.LeafletMouseEvent) => {
-      if (addModeRef.current) onMapClickRef.current(e.latlng.lat, e.latlng.lng)
-    })
-
     onMapReadyRef.current(map)
 
     return () => {
       map.remove()
     }
   }, [])
-
-  useEffect(() => {
-    containerRef.current?.classList.toggle('add-mode', addMode)
-  }, [addMode])
 
   return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 }

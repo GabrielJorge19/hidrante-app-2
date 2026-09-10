@@ -5,7 +5,6 @@ import ReloadPrompt from './ReloadPrompt'
 import TopBar from './components/topbar/TopBar'
 import MapView from './components/map/MapView'
 import HydrantLayer from './components/map/HydrantLayer'
-import AddHydrantFab from './components/hydrant/AddHydrantFab'
 import HydrantDetailSheet from './components/hydrant/HydrantDetailSheet'
 import MarkerEditSheet, { type Point } from './components/hydrant/MarkerEditSheet'
 import MarkerDetailSheet from './components/hydrant/MarkerDetailSheet'
@@ -15,7 +14,6 @@ import type { Hidrante, LocalMarker } from './lib/types'
 
 function App() {
   const [map, setMap] = useState<L.Map | null>(null)
-  const [addMode, setAddMode] = useState(false)
   const [selectedHidrante, setSelectedHidrante] = useState<Hidrante | null>(null)
   const [selectedMarker, setSelectedMarker] = useState<LocalMarker | null>(null)
   const [draftPoint, setDraftPoint] = useState<Point | null>(null)
@@ -24,10 +22,6 @@ function App() {
   const markers = useCustomMarkers()
 
   const handleMapReady = useCallback((nextMap: L.Map) => setMap(nextMap), [])
-
-  const handleMapClick = useCallback((latitude: number, longitude: number) => {
-    setDraftPoint({ latitude, longitude })
-  }, [])
 
   const handleSelectHidrante = useCallback(
     (hidrante: Hidrante) => setSelectedHidrante(hidrante),
@@ -46,10 +40,10 @@ function App() {
     [map],
   )
 
-  const cancelAddMode = () => {
-    setAddMode(false)
+  const closeSheets = () => {
     setDraftPoint(null)
     setSelectedMarker(null)
+    setSelectedHidrante(null)
   }
 
   const handleHidranteSearch = (hidrante: Hidrante) => {
@@ -57,13 +51,17 @@ function App() {
     setSelectedHidrante(hidrante)
   }
 
+  const handleAddMarkerAtHidrante = (hidrante: Hidrante) => {
+    setSelectedHidrante(null)
+    setDraftPoint({
+      latitude: hidrante.latitude,
+      longitude: hidrante.longitude,
+    })
+  }
+
   return (
     <>
-      <MapView
-        onMapReady={handleMapReady}
-        addMode={addMode}
-        onMapClick={handleMapClick}
-      />
+      <MapView onMapReady={handleMapReady} />
       <HydrantLayer
         map={map}
         hidrantes={hidrantes}
@@ -73,15 +71,6 @@ function App() {
       />
       <TopBar hidrantes={hidrantes} onSelect={handleHidranteSearch} />
 
-      {!addMode && <AddHydrantFab onClick={() => setAddMode(true)} />}
-
-      {addMode && (
-        <div className="add-mode-banner">
-          <span>Toque no mapa para adicionar um marcador</span>
-          <button onClick={cancelAddMode}>Cancelar</button>
-        </div>
-      )}
-
       <HydrantDetailSheet
         open={!!selectedHidrante}
         hidrante={selectedHidrante}
@@ -90,6 +79,9 @@ function App() {
           selectedHidrante &&
           flyTo(selectedHidrante.latitude, selectedHidrante.longitude)
         }
+        onAddMarker={() =>
+          selectedHidrante && handleAddMarkerAtHidrante(selectedHidrante)
+        }
       />
 
       <MarkerEditSheet
@@ -97,8 +89,8 @@ function App() {
         open={!!draftPoint}
         point={draftPoint}
         marker={selectedMarker}
-        onClose={cancelAddMode}
-        onSaved={cancelAddMode}
+        onClose={closeSheets}
+        onSaved={closeSheets}
       />
 
       <MarkerDetailSheet
@@ -112,10 +104,7 @@ function App() {
             longitude: selectedMarker.longitude,
           })
         }
-        onDeleted={() => {
-          setSelectedMarker(null)
-          setDraftPoint(null)
-        }}
+        onDeleted={closeSheets}
       />
 
       <ReloadPrompt />

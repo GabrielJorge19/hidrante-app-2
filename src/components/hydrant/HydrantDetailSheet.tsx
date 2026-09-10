@@ -7,6 +7,7 @@ interface HydrantDetailSheetProps {
   hidrante: Hidrante | null
   onClose: () => void
   onCenter: () => void
+  onAddMarker: () => void
 }
 
 function formatDate(iso: string): string {
@@ -32,6 +33,7 @@ function HydrantDetailSheet({
   hidrante,
   onClose,
   onCenter,
+  onAddMarker,
 }: HydrantDetailSheetProps) {
   return (
     <BottomSheet open={open} onClose={onClose} title={hidrante ? `Hidrante ${hidrante.id}` : ''}>
@@ -49,9 +51,14 @@ function HydrantDetailSheet({
             <Field label="Status Bombeiro" value={hidrante.status_bombeiro ?? ''} />
             <Field label="Atualizado em" value={formatDate(hidrante.updated_at)} />
           </div>
-          <button className="sheet-button primary" onClick={onCenter}>
-            Centralizar no mapa
-          </button>
+          <div className="sheet-actions">
+            <button type="button" className="sheet-button primary" onClick={onAddMarker}>
+              Adicionar marcador
+            </button>
+            <button type="button" className="sheet-button" onClick={onCenter}>
+              Centralizar no mapa
+            </button>
+          </div>
         </>
       )}
     </BottomSheet>

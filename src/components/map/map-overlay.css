@@ -2,10 +2,6 @@
   font-family: inherit;
 }
 
-.leaflet-container.add-mode {
-  cursor: crosshair;
-}
-
 .pin {
   position: relative;
   display: block;
