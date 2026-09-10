@@ -29,10 +29,15 @@ function MapView({ onMapReady, addMode, onMapClick }: MapViewProps) {
       zoomControl: true,
     }).setView([-23.55, -46.63], 13)
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map)
+    L.tileLayer(
+      `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=${import.meta.env.VITE_CARTO_API_KEY ?? ''}`,
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
+      },
+    ).addTo(map)
 
     map.on('click', (e: L.LeafletMouseEvent) => {
       if (addModeRef.current) onMapClickRef.current(e.latlng.lat, e.latlng.lng)

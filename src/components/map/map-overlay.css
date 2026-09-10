@@ -45,3 +45,34 @@
   border-radius: 50%;
   background: #fff;
 }
+
+.marker-cluster div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 700;
+  color: #fff;
+}
+
+.marker-cluster-small div {
+  background-color: #43a047;
+}
+
+.marker-cluster-medium div {
+  background-color: #2e7d32;
+}
+
+.marker-cluster-large div {
+  background-color: #1b5e20;
+}
+
+.marker-cluster div {
+  background-image: none;
+}
+
+.marker-cluster-small span,
+.marker-cluster-medium span,
+.marker-cluster-large span {
+  color: #fff;
+}

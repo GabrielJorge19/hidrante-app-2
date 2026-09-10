@@ -1,5 +1,8 @@
 import { useEffect } from 'react'
 import L from 'leaflet'
+import 'leaflet.markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { DEFAULT_MARKER_COLOR } from '../../lib/markerTypes'
 import type { Hidrante, LocalMarker } from '../../lib/types'
 
@@ -29,6 +32,8 @@ function localIcon(color: string): L.DivIcon {
   })
 }
 
+const CLUSTER_DISABLE_AT_ZOOM = 15
+
 function HydrantLayer({
   map,
   hidrantes,
@@ -39,25 +44,36 @@ function HydrantLayer({
   useEffect(() => {
     if (!map) return
 
-    const group = L.layerGroup().addTo(map)
+    const cluster = L.markerClusterGroup({
+      chunkedLoading: true,
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      maxClusterRadius: 100,
+      disableClusteringAtZoom: CLUSTER_DISABLE_AT_ZOOM,
+    }).addTo(map)
+
+    const localGroup = L.layerGroup().addTo(map)
 
     hidrantes.forEach((hidrante) => {
       const marker = L.marker([hidrante.latitude, hidrante.longitude], {
         icon: hydranteIcon(),
-      }).addTo(group)
+      })
       marker.on('click', () => onSelectHidrante(hidrante))
+      cluster.addLayer(marker)
     })
 
     markers.forEach((localMarker) => {
       const marker = L.marker([localMarker.latitude, localMarker.longitude], {
         icon: localIcon(localMarker.color ?? DEFAULT_MARKER_COLOR),
-      }).addTo(group)
+      }).addTo(localGroup)
       marker.on('click', () => onSelectMarker(localMarker))
     })
 
     return () => {
-      group.clearLayers()
-      map.removeLayer(group)
+      cluster.clearLayers()
+      map.removeLayer(cluster)
+      localGroup.clearLayers()
+      map.removeLayer(localGroup)
     }
   }, [map, hidrantes, markers, onSelectHidrante, onSelectMarker])
 
