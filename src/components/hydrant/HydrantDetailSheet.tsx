@@ -1,4 +1,5 @@
 import BottomSheet from '../ui/BottomSheet'
+import { openInGoogleMaps } from '../../lib/maps'
 import type { Hidrante } from '../../lib/types'
 import './hydrant-ui.css'
 
@@ -55,8 +56,15 @@ function HydrantDetailSheet({
             <button type="button" className="sheet-button primary" onClick={onAddMarker}>
               Adicionar marcador
             </button>
+            <button
+              type="button"
+              className="sheet-button"
+              onClick={() => openInGoogleMaps(hidrante.latitude, hidrante.longitude)}
+            >
+              Ir para
+            </button>
             <button type="button" className="sheet-button" onClick={onCenter}>
-              Centralizar no mapa
+              Centralizar
             </button>
           </div>
         </>

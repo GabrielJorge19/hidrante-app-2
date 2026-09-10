@@ -2,6 +2,7 @@ import { useState } from 'react'
 import BottomSheet from '../ui/BottomSheet'
 import { db } from '../../lib/db'
 import { markerTypeLabel } from '../../lib/markerTypes'
+import { openInGoogleMaps } from '../../lib/maps'
 import type { LocalMarker } from '../../lib/types'
 import './hydrant-ui.css'
 
@@ -86,6 +87,13 @@ function MarkerDetailSheet({
             </div>
           ) : (
             <div className="sheet-actions">
+              <button
+                type="button"
+                className="sheet-button"
+                onClick={() => openInGoogleMaps(marker.latitude, marker.longitude)}
+              >
+                Ir para
+              </button>
               <button type="button" className="sheet-button" onClick={onEdit}>
                 Editar
               </button>
