@@ -8,7 +8,7 @@ export interface Hidrante {
   subprefeitura: string | null
   regiao: string | null
   endereco: string | null
-  ativo: boolean | null
+  ativo: string | null
   status_sgz: string | null
   status_bombeiro: string | null
   updated_at: string

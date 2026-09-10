@@ -44,7 +44,7 @@ function HydrantDetailSheet({
             <Field label="Distrito" value={hidrante.distrito ?? ''} />
             <Field label="Subprefeitura" value={hidrante.subprefeitura ?? ''} />
             <Field label="Região" value={hidrante.regiao ?? ''} />
-            <Field label="Ativo" value={hidrante.ativo ? 'Sim' : 'Não'} />
+            <Field label="Ativo" value={hidrante.ativo ?? ''} />
             <Field label="Status SGZ" value={hidrante.status_sgz ?? ''} />
             <Field label="Status Bombeiro" value={hidrante.status_bombeiro ?? ''} />
             <Field label="Atualizado em" value={formatDate(hidrante.updated_at)} />

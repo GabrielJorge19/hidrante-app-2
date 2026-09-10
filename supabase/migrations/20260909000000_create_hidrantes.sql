@@ -10,7 +10,7 @@ create table if not exists public.hidrantes (
   subprefeitura text,
   regiao text,
   endereco text,
-  ativo boolean default true,
+  ativo text,
   status_sgz text,
   status_bombeiro text,
   updated_at timestamptz not null default now()
