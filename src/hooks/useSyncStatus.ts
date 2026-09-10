@@ -50,7 +50,7 @@ export function useSyncStatus() {
   async function refreshAll() {
     setStatus('syncing')
     try {
-      await runSync('full')
+      await runSync('delta')
       setStatus('online')
       setLastSync(nowLabel())
     } catch {

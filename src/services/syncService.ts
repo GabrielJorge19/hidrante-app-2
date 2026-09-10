@@ -3,14 +3,23 @@ import { supabase } from '../lib/supabase'
 import type { Hidrante } from '../lib/types'
 
 const LAST_SYNC_KEY = 'last_synced_at'
-
-async function getLastSync(): Promise<string | null> {
-  const row = await db.meta.get(LAST_SYNC_KEY)
-  return row?.value ?? null
-}
+const PAGE_SIZE = 1000
 
 async function setLastSync(value: string): Promise<void> {
   await db.meta.put({ key: LAST_SYNC_KEY, value })
+}
+
+async function getLocalMaxUpdatedAt(): Promise<string | null> {
+  const last = await db.hidrantes.orderBy('updated_at').last()
+  return last?.updated_at ?? null
+}
+
+async function getServerTotal(): Promise<number> {
+  if (!supabase) return 0
+  const { count } = await supabase
+    .from('hidrantes')
+    .select('id', { count: 'exact', head: true })
+  return count ?? 0
 }
 
 type SyncMode = 'delta' | 'full'
@@ -23,33 +32,62 @@ export async function runSync(mode: SyncMode = 'delta'): Promise<number> {
   try {
     if (!supabase) throw new Error('Supabase não configurado')
 
-    let query = supabase
+    const dataQuery = supabase
       .from('hidrantes')
       .select('*')
       .order('updated_at', { ascending: true })
 
-    if (mode === 'delta') {
-      const lastSync = await getLastSync()
-      if (lastSync) query = query.gt('updated_at', lastSync)
+    type DataQuery = typeof dataQuery
+
+    async function fetchAllPages(query: DataQuery): Promise<Hidrante[]> {
+      const rows: Hidrante[] = []
+      let from = 0
+      for (;;) {
+        const { data, error } = await query.range(from, from + PAGE_SIZE - 1)
+        if (error) throw error
+        const page = (data ?? []) as Hidrante[]
+        rows.push(...page)
+        if (page.length < PAGE_SIZE) break
+        from += PAGE_SIZE
+      }
+      return rows
     }
 
-    const { data, error } = await query
-    if (error) throw error
+    const serverTotal = await getServerTotal()
+    const localCount = await db.hidrantes.count()
+    const localMax = await getLocalMaxUpdatedAt()
+    const needsFullReload = mode === 'full' || localCount !== serverTotal
 
-    const rows = (data ?? []) as Hidrante[]
     const now = Date.now()
 
+    if (needsFullReload) {
+      const rows = await fetchAllPages(dataQuery)
+      await db.transaction('rw', db.hidrantes, db.meta, async () => {
+        await db.hidrantes.clear()
+        if (rows.length > 0) {
+          await db.hidrantes.bulkPut(
+            rows.map((row) => ({ ...row, synced_at: now })),
+          )
+        }
+        const lastUpdated =
+          rows.length > 0 ? rows[rows.length - 1].updated_at : localMax
+        if (lastUpdated) await setLastSync(lastUpdated)
+      })
+      return rows.length
+    }
+
+    let query = dataQuery
+    if (localMax) query = query.gt('updated_at', localMax)
+
+    const rows = await fetchAllPages(query)
     await db.transaction('rw', db.hidrantes, db.meta, async () => {
-      if (mode === 'full') await db.hidrantes.clear()
       if (rows.length > 0) {
         await db.hidrantes.bulkPut(
           rows.map((row) => ({ ...row, synced_at: now })),
         )
       }
       const lastUpdated =
-        rows.length > 0
-          ? rows[rows.length - 1].updated_at
-          : await getLastSync()
+        rows.length > 0 ? rows[rows.length - 1].updated_at : localMax
       if (lastUpdated) await setLastSync(lastUpdated)
     })
 
