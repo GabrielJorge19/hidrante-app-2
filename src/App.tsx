@@ -23,21 +23,24 @@ function App() {
 
   const handleMapReady = useCallback((nextMap: L.Map) => setMap(nextMap), [])
 
-  const handleSelectHidrante = useCallback(
-    (hidrante: Hidrante) => setSelectedHidrante(hidrante),
-    [],
-  )
-
-  const handleSelectMarker = useCallback(
-    (marker: LocalMarker) => setSelectedMarker(marker),
-    [],
-  )
-
   const flyTo = useCallback(
     (latitude: number, longitude: number) => {
       map?.flyTo([latitude, longitude], 17)
     },
     [map],
+  )
+
+  const handleSelectHidrante = useCallback(
+    (hidrante: Hidrante) => {
+      flyTo(hidrante.latitude, hidrante.longitude)
+      setSelectedHidrante(hidrante)
+    },
+    [flyTo],
+  )
+
+  const handleSelectMarker = useCallback(
+    (marker: LocalMarker) => setSelectedMarker(marker),
+    [],
   )
 
   const closeSheets = () => {
@@ -75,10 +78,6 @@ function App() {
         open={!!selectedHidrante}
         hidrante={selectedHidrante}
         onClose={() => setSelectedHidrante(null)}
-        onCenter={() =>
-          selectedHidrante &&
-          flyTo(selectedHidrante.latitude, selectedHidrante.longitude)
-        }
         onAddMarker={() =>
           selectedHidrante && handleAddMarkerAtHidrante(selectedHidrante)
         }

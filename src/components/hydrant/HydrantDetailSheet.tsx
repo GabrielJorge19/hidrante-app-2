@@ -7,7 +7,6 @@ interface HydrantDetailSheetProps {
   open: boolean
   hidrante: Hidrante | null
   onClose: () => void
-  onCenter: () => void
   onAddMarker: () => void
 }
 
@@ -33,7 +32,6 @@ function HydrantDetailSheet({
   open,
   hidrante,
   onClose,
-  onCenter,
   onAddMarker,
 }: HydrantDetailSheetProps) {
   return (
@@ -62,9 +60,6 @@ function HydrantDetailSheet({
               onClick={() => openInGoogleMaps(hidrante.latitude, hidrante.longitude)}
             >
               Ir para
-            </button>
-            <button type="button" className="sheet-button" onClick={onCenter}>
-              Centralizar
             </button>
           </div>
         </>
