@@ -26,7 +26,7 @@ function MapView({ onMapReady, addMode, onMapClick }: MapViewProps) {
     if (!container) return
 
     const map = L.map(container, {
-      zoomControl: true,
+      zoomControl: false,
     }).setView([-23.55, -46.63], 13)
 
     L.tileLayer(

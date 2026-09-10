@@ -32,7 +32,7 @@ function localIcon(color: string): L.DivIcon {
   })
 }
 
-const CLUSTER_DISABLE_AT_ZOOM = 15
+const CLUSTER_DISABLE_AT_ZOOM = 16
 const LABEL_MIN_ZOOM = CLUSTER_DISABLE_AT_ZOOM
 
 function HydrantLayer({
@@ -48,7 +48,9 @@ function HydrantLayer({
     const cluster = L.markerClusterGroup({
       chunkedLoading: true,
       showCoverageOnHover: false,
-      spiderfyOnMaxZoom: true,
+      spiderfyOnMaxZoom: false,
+      spiderfyOnEveryZoom: false,
+      zoomToBoundsOnClick: true,
       maxClusterRadius: 100,
       disableClusteringAtZoom: CLUSTER_DISABLE_AT_ZOOM,
     }).addTo(map)
