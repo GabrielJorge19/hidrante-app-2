@@ -14,12 +14,12 @@ interface HydrantLayerProps {
   onSelectMarker: (marker: LocalMarker) => void
 }
 
-function hydranteIcon(): L.DivIcon {
+function hydranteIcon(id: number): L.DivIcon {
   return L.divIcon({
     className: '',
-    html: '<span class="pin pin-hydrante"></span>',
-    iconSize: [22, 30],
-    iconAnchor: [11, 30],
+    html: `<span class="pin-marker"><span class="pin-label">${id}</span><span class="pin pin-hydrante"></span></span>`,
+    iconSize: [44, 52],
+    iconAnchor: [22, 52],
   })
 }
 
@@ -33,6 +33,7 @@ function localIcon(color: string): L.DivIcon {
 }
 
 const CLUSTER_DISABLE_AT_ZOOM = 15
+const LABEL_MIN_ZOOM = CLUSTER_DISABLE_AT_ZOOM
 
 function HydrantLayer({
   map,
@@ -54,9 +55,15 @@ function HydrantLayer({
 
     const localGroup = L.layerGroup().addTo(map)
 
+    const container = map.getContainer()
+    const applyLabels = () =>
+      container.classList.toggle('show-labels', map.getZoom() >= LABEL_MIN_ZOOM)
+    applyLabels()
+    map.on('zoomend', applyLabels)
+
     hidrantes.forEach((hidrante) => {
       const marker = L.marker([hidrante.latitude, hidrante.longitude], {
-        icon: hydranteIcon(),
+        icon: hydranteIcon(hidrante.id),
       })
       marker.on('click', () => onSelectHidrante(hidrante))
       cluster.addLayer(marker)
@@ -74,6 +81,8 @@ function HydrantLayer({
       map.removeLayer(cluster)
       localGroup.clearLayers()
       map.removeLayer(localGroup)
+      map.off('zoomend', applyLabels)
+      container.classList.remove('show-labels')
     }
   }, [map, hidrantes, markers, onSelectHidrante, onSelectMarker])
 
