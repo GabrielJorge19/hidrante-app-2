@@ -1,5 +1,5 @@
 export interface Hidrante {
-  id: string
+  id: number
   latitude: number
   longitude: number
   tipo: string | null

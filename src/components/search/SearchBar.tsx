@@ -15,7 +15,7 @@ function SearchBar({ hidrantes, onSelect }: SearchBarProps) {
     const q = query.trim().toLowerCase()
     if (!q) return []
     return hidrantes
-      .filter((h) => h.id.toLowerCase().includes(q))
+      .filter((h) => String(h.id).includes(q))
       .slice(0, 6)
   }, [query, hidrantes])
 
