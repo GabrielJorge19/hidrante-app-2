@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { Hidrante } from '../../lib/types'
 import './SearchBar.css'
 
@@ -10,6 +10,7 @@ interface SearchBarProps {
 function SearchBar({ hidrantes, onSelect }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const [focused, setFocused] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -22,6 +23,7 @@ function SearchBar({ hidrantes, onSelect }: SearchBarProps) {
   const showList = focused && query.trim().length > 0
 
   const handleSelect = (hidrante: Hidrante) => {
+    inputRef.current?.blur()
     onSelect(hidrante)
     setQuery('')
     setFocused(false)
@@ -30,11 +32,15 @@ function SearchBar({ hidrantes, onSelect }: SearchBarProps) {
   return (
     <div className="search-wrap">
       <input
+        ref={inputRef}
         className="search-input"
         type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        autoComplete="off"
         placeholder="Buscar hidrante…"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => setQuery(e.target.value.replace(/\D/g, ''))}
         onFocus={() => setFocused(true)}
         onBlur={() => setTimeout(() => setFocused(false), 150)}
         onKeyDown={(e) => {
