@@ -46,6 +46,57 @@
   padding: 0 20px;
 }
 
+.sheet-backdrop.compact {
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.sheet.compact {
+  position: relative;
+  width: auto;
+  min-width: 300px;
+  max-width: calc(100% - 40px);
+  border-radius: 20px;
+  padding: 14px 0 calc(var(--sheet-safe-bottom, 16px) + 8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  animation: sheet-pop 0.18s ease;
+  pointer-events: auto;
+}
+
+.sheet.compact .sheet-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #f0f0f0;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  z-index: 1;
+}
+
+.sheet.compact .sheet-close:active {
+  background: #e0e0e0;
+}
+
+.sheet.compact .sheet-content {
+  padding: 0 20px;
+}
+
+.sheet.compact .sheet-title {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
 @media (min-width: 768px) {
   .sheet-backdrop {
     align-items: center;
@@ -70,5 +121,16 @@
       opacity: 1;
       transform: translateY(0) scale(1);
     }
+  }
+}
+
+@media (min-width: 768px) {
+  .sheet-backdrop.compact {
+    align-items: flex-end;
+    padding: 0 0 24px;
+  }
+
+  .sheet.compact {
+    min-width: 320px;
   }
 }

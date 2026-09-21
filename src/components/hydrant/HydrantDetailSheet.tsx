@@ -1,5 +1,7 @@
 import BottomSheet from '../ui/BottomSheet'
 import { openInGoogleMaps } from '../../lib/maps'
+import { hydranteTipoLabel } from '../../lib/hydranteTypes'
+import HydranteTipoIcon from './HydranteTypeIcon'
 import type { Hidrante } from '../../lib/types'
 import './hydrant-ui.css'
 
@@ -10,22 +12,8 @@ interface HydrantDetailSheetProps {
   onAddMarker: () => void
 }
 
-function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString('pt-BR')
-  } catch {
-    return iso
-  }
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-  if (!value) return null
-  return (
-    <div className="field">
-      <span className="field-label">{label}</span>
-      <span className="field-value">{value}</span>
-    </div>
-  )
+function bombeirosUrl(id: number): string {
+  return `https://cbaplang.corpodebombeiros.sp.gov.br/hidrantes/03individual/${id}.html`
 }
 
 function HydrantDetailSheet({
@@ -35,20 +23,17 @@ function HydrantDetailSheet({
   onAddMarker,
 }: HydrantDetailSheetProps) {
   return (
-    <BottomSheet open={open} onClose={onClose} title={hidrante ? `Hidrante ${hidrante.id}` : ''}>
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      compact
+      title={hidrante ? `Hidrante ${hidrante.id}` : ''}
+    >
       {hidrante && (
-        <>
-          <div className="detail-grid">
-            <Field label="Tipo" value={hidrante.tipo ?? ''} />
-            <Field label="Endereço" value={hidrante.endereco ?? ''} />
-            <Field label="Bairro" value={hidrante.bairro ?? ''} />
-            <Field label="Distrito" value={hidrante.distrito ?? ''} />
-            <Field label="Subprefeitura" value={hidrante.subprefeitura ?? ''} />
-            <Field label="Região" value={hidrante.regiao ?? ''} />
-            <Field label="Ativo" value={hidrante.ativo ?? ''} />
-            <Field label="Status SGZ" value={hidrante.status_sgz ?? ''} />
-            <Field label="Status Bombeiro" value={hidrante.status_bombeiro ?? ''} />
-            <Field label="Atualizado em" value={formatDate(hidrante.updated_at)} />
+        <div className="hydrant-summary">
+          <div className="hydrant-summary-type">
+            <HydranteTipoIcon tipo={hidrante.tipo} />
+            <span>{hydranteTipoLabel(hidrante.tipo)}</span>
           </div>
           <div className="sheet-actions">
             <button type="button" className="sheet-button primary" onClick={onAddMarker}>
@@ -61,8 +46,31 @@ function HydrantDetailSheet({
             >
               Ir para
             </button>
+            <a
+              className="sheet-button wide"
+              href={bombeirosUrl(hidrante.id)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M14 4h6v6" />
+                <path d="M20 4L10 14" />
+                <path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5" />
+              </svg>
+              Ficha Bombeiros
+            </a>
           </div>
-        </>
+        </div>
       )}
     </BottomSheet>
   )
