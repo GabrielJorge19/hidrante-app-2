@@ -1,0 +1,54 @@
+.locate-wrap {
+  position: fixed;
+  right: 12px;
+  bottom: calc(var(--sheet-safe-bottom, 16px) + 40px);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.locate-button {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  color: #333;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.locate-button:active {
+  background: #f0f0f0;
+}
+
+.locate-button.active {
+  color: #1a73e8;
+  background: #e8f0fe;
+}
+
+.locate-message {
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  max-width: 220px;
+  text-align: right;
+}
+
+@media (min-width: 768px) {
+  .locate-button:hover {
+    background: #f0f0f0;
+  }
+
+  .locate-button.active:hover {
+    background: #e8f0fe;
+  }
+}
