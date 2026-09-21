@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import SearchBar from '../search/SearchBar'
+import FilterButton from './FilterButton'
 import { useSyncStatus, type SyncStatus } from '../../hooks/useSyncStatus'
 import type { Hidrante } from '../../lib/types'
+import type { HidranteFilters } from '../../lib/hidranteFilters'
 import './TopBar.css'
 
 interface TopBarProps {
   hidrantes: Hidrante[]
+  filters: HidranteFilters
+  onFiltersChange: (filters: HidranteFilters) => void
   onSelect: (hidrante: Hidrante) => void
 }
 
@@ -16,7 +20,7 @@ const STATUS_TEXT: Record<SyncStatus, string> = {
   unconfigured: 'Supabase não configurado',
 }
 
-function TopBar({ hidrantes, onSelect }: TopBarProps) {
+function TopBar({ hidrantes, filters, onFiltersChange, onSelect }: TopBarProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { status, lastSync, refreshAll } = useSyncStatus()
@@ -41,6 +45,8 @@ function TopBar({ hidrantes, onSelect }: TopBarProps) {
 
   return (
     <div className="topbar">
+      <FilterButton hidrantes={hidrantes} filters={filters} onChange={onFiltersChange} />
+
       <SearchBar hidrantes={hidrantes} onSelect={onSelect} />
 
       <div className="menu-wrap" ref={menuRef}>
