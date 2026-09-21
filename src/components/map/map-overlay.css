@@ -70,6 +70,59 @@
   background: #fff;
 }
 
+.base-pin-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.base-pin-label {
+  margin: 0 2px 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #1a237e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.base-pin {
+  position: relative;
+  display: block;
+  width: 22px;
+  height: 30px;
+}
+
+.base-pin::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -65%) rotate(-45deg);
+  border-radius: 50% 50% 50% 0;
+  border: 2px solid #fff;
+  background: #1a237e;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.base-pin::after {
+  content: '★';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -68%);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  pointer-events: none;
+}
+
 .marker-cluster div {
   display: flex;
   align-items: center;
