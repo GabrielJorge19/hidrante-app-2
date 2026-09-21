@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import BottomSheet from '../ui/BottomSheet'
 import { db } from '../../lib/db'
-import { MARKER_TYPES } from '../../lib/markerTypes'
+import { MARKER_TYPES, requiresNotes } from '../../lib/markerTypes'
 import type { LocalMarker } from '../../lib/types'
 import './hydrant-ui.css'
 
@@ -19,29 +19,28 @@ interface MarkerEditSheetProps {
 }
 
 function MarkerEditSheet({ open, point, marker, onClose, onSaved }: MarkerEditSheetProps) {
-  const [label, setLabel] = useState(marker?.label ?? '')
   const [typeId, setTypeId] = useState(marker?.typeId ?? MARKER_TYPES[0].id)
   const [color, setColor] = useState(marker?.color ?? MARKER_TYPES[0].color)
   const [notes, setNotes] = useState(marker?.notes ?? '')
   const [error, setError] = useState('')
 
-  const trimmedLabel = label.trim()
-
   function handleTypeSelect(id: string) {
     setTypeId(id)
+    setError('')
     const preset = MARKER_TYPES.find((t) => t.id === id)
     if (preset && preset.id !== 'outro') setColor(preset.color)
   }
 
   async function handleSave() {
     if (!point) return
-    if (!trimmedLabel) {
-      setError('Informe um nome/tipo para o marcador.')
+    const notesTrimmed = notes.trim()
+    if (requiresNotes(typeId) && !notesTrimmed) {
+      setError('Este marcador exige uma observação.')
       return
     }
     const payload = {
-      label: trimmedLabel,
-      notes: notes.trim(),
+      label: marker?.label ?? '',
+      notes: notesTrimmed,
       typeId,
       color,
       latitude: point.latitude,
@@ -94,19 +93,6 @@ function MarkerEditSheet({ open, point, marker, onClose, onSaved }: MarkerEditSh
           </div>
         </div>
 
-        <label className="field">
-          <span className="field-label">Nome do marcador</span>
-          <input
-            className="field-input"
-            value={label}
-            onChange={(e) => {
-              setLabel(e.target.value)
-              setError('')
-            }}
-            placeholder="Ex: Setor 4, hidrante reservado…"
-          />
-        </label>
-
         {typeId === 'outro' && (
           <label className="field color-field">
             <span className="field-label">Cor do marcador</span>
@@ -123,12 +109,21 @@ function MarkerEditSheet({ open, point, marker, onClose, onSaved }: MarkerEditSh
         )}
 
         <label className="field">
-          <span className="field-label">Observações</span>
+          <span className="field-label">
+            Observações{requiresNotes(typeId) ? ' (obrigatória)' : ' (opcional)'}
+          </span>
           <textarea
             className="field-input"
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Observações opcionais"
+            onChange={(e) => {
+              setNotes(e.target.value)
+              setError('')
+            }}
+            placeholder={
+              requiresNotes(typeId)
+                ? 'Ex: voltar para verificar, vistoriar…'
+                : 'Observações opcionais'
+            }
             rows={3}
           />
         </label>

@@ -44,7 +44,11 @@ function MarkerDetailSheet({
   }
 
   return (
-    <BottomSheet open={open} onClose={close} title={marker?.label ?? ''}>
+    <BottomSheet
+      open={open}
+      onClose={close}
+      title={marker ? markerTypeLabel(marker.typeId) : ''}
+    >
       {marker && (
         <>
           <div className="detail-grid">
