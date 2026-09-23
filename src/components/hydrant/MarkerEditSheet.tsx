@@ -14,11 +14,19 @@ interface MarkerEditSheetProps {
   open: boolean
   point: Point | null
   marker: LocalMarker | null
+  hydranteId?: number
   onClose: () => void
   onSaved: () => void
 }
 
-function MarkerEditSheet({ open, point, marker, onClose, onSaved }: MarkerEditSheetProps) {
+function MarkerEditSheet({
+  open,
+  point,
+  marker,
+  hydranteId,
+  onClose,
+  onSaved,
+}: MarkerEditSheetProps) {
   const [typeId, setTypeId] = useState(marker?.typeId ?? MARKER_TYPES[0].id)
   const [color, setColor] = useState(marker?.color ?? MARKER_TYPES[0].color)
   const [notes, setNotes] = useState(marker?.notes ?? '')
@@ -43,6 +51,7 @@ function MarkerEditSheet({ open, point, marker, onClose, onSaved }: MarkerEditSh
       notes: notesTrimmed,
       typeId,
       color,
+      hydranteId: marker?.hydranteId ?? hydranteId,
       latitude: point.latitude,
       longitude: point.longitude,
     }

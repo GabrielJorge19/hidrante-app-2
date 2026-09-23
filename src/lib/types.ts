@@ -21,6 +21,7 @@ export interface LocalMarker {
   notes: string
   typeId?: string
   color?: string
+  hydranteId?: number
   latitude: number
   longitude: number
   createdAt: number
