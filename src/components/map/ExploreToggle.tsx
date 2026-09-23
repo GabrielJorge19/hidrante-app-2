@@ -12,10 +12,11 @@ function ExploreToggle({ active, onClick }: ExploreToggleProps) {
       className={`explore-toggle${active ? ' active' : ''}`}
       onClick={onClick}
       aria-pressed={active}
+      aria-label={active ? 'Hidrantes visíveis' : 'Ver hidrantes'}
     >
       <svg
-        width="18"
-        height="18"
+        width="22"
+        height="22"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -30,7 +31,6 @@ function ExploreToggle({ active, onClick }: ExploreToggleProps) {
         <circle cx="16.5" cy="17" r="3.5" />
         <path d="M5 17h14" />
       </svg>
-      {active ? 'Hidrantes visíveis' : 'Ver hidrantes'}
     </button>
   )
 }
