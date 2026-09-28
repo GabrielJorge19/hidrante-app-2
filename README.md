@@ -20,9 +20,9 @@ Implementadas:
 - **Busca de hidrantes por identificação** — campo de busca com sugestões (até 6 resultados) filtradas pelo número do hidrante.
 - **Mapa com localização dos hidrantes** — base cartográfica (CARTO) e marcadores; em zoom aproximado, hidrantes próximos são agrupados em clusters; em zoom alto (≥ 16) cada hidrante exibe uma etiqueta com o seu número.
 - **Detalhes do hidrante** — ao tocar no hidrante, o mapa centraliza automaticamente e uma folha exibe os dados cadastrais.
-- **Navegação pelo Google Maps** — botão "Ir para" abre o Google Maps com a rota até a coordenada do hidrante (ou do marcador).
-- **Marcadores de campo** — criação, edição e remoção de marcadores no mapa para registrar pontos importantes identificados em campo (ponto de apoio, obra, reservado, em manutenção, risco, personalizado). A criação parte da ficha do hidrante, ancorando o marcador naquela posição.
-- **Funcionamento offline** — aplicativo instalável (PWA) com dados locais em IndexedDB e cache do mapa base; busca e marcadores funcionam sem conexão.
+- **Navegação pelo Google Maps** — botão "Ir para" abre o Google Maps com a rota até a coordenada do hidrante.
+- **Hidrantes salvos** — o colaborador salva hidrantes da ficha para destacá-los no mapa com pin colorido, adicionando tag (manutenção, voltar, personalizado), cor e observações. O salvamento é ancorado no próprio hidrante e pode ser editado ou removido depois.
+- **Funcionamento offline** — aplicativo instalável (PWA) com dados locais em IndexedDB e cache do mapa base; busca e hidrantes salvos funcionam sem conexão.
 - **Sincronização da base de hidrantes** — atualização automática periódica e manual ("Atualizar agora"), com carregamento incremental e recarga completa quando necessário.
 - **Indicador de status** — menu com o estado de sincronização (sincronizando / sincronizado / offline) e horário da última sincronização.
 
@@ -36,7 +36,7 @@ Implementadas:
 | **Leaflet** (`leaflet`, `leaflet.markercluster`) | Renderização do mapa, marcadores e agrupamento em clusters. |
 | **CARTO basemaps** | Serviço de tiles do mapa base (estilo Positron, sem ícones comerciais). |
 | **Supabase** (`@supabase/supabase-js`) | Fonte remota de dados dos hidrantes (Postgres/PostgREST), acesso somente leitura. |
-| **Dexie + IndexedDB** (`dexie`, `dexie-react-hooks`) | Armazenamento local offline dos hidrantes e dos marcadores. |
+| **Dexie + IndexedDB** (`dexie`, `dexie-react-hooks`) | Armazenamento local offline dos hidrantes e dos hidrantes salvos. |
 | **GitHub Actions** | Pipeline de build e publicação no GitHub Pages. |
 
 ## Arquitetura
@@ -51,14 +51,14 @@ flowchart LR
 
     subgraph Navegador (PWA)
         SW[Service Worker\ncache de app e tiles]
-        D[(IndexedDB via Dexie\nhidrantes + marcadores + meta)]
+        D[(IndexedDB via Dexie\nhidrantes + salvos + meta)]
         APP["Interface (React/Leaflet)"]
         D --> APP
         SW --> APP
     end
 
     S -- "sync de hidrantes" --> D
-    APP -- "criar/editar/excluir\nmarcador" --> D
+    APP -- "salvar/editar/remover\nhidrante" --> D
 ```
 
 **Fluxo de sincronização** (`src/services/syncService.ts`):
@@ -89,7 +89,7 @@ Fluxo principal de uso em campo:
 3. O mapa é centralizado na localização do hidrante e a ficha de detalhes é aberta.
 4. O colaborador consulta os dados cadastrais (endereço, bairro, distrito, subprefeitura, região, status).
 5. O colaborador pode tocar em **"Ir para"**, que abre o Google Maps com a rota até a coordenada.
-6. Para registrar um ponto relevante encontrado em campo, o colaborador usa **"Adicionar marcador"** — o marcador é criado na posição do hidrante, com tipo, nome e observações. Marcadores podem ser editados ou removidos depois.
+6. Para registrar um ponto relevante encontrado em campo, o colaborador usa **"Salvar hidrante"** — o hidrante fica destacado no mapa com pin colorido, tag e observações. O salvo pode ser editado ou removido depois.
 
 ## Estrutura do projeto
 
@@ -107,15 +107,15 @@ Fluxo principal de uso em campo:
 │  │  ├─ search/SearchBar.tsx        # Busca de hidrantes por identificação
 │  │  ├─ map/
 │  │  │  ├─ MapView.tsx              # Mapa Leaflet + tiles CARTO
-│  │  │  └─ HydrantLayer.tsx         # Marcadores de hidrantes, clusters, etiquetas, marcadores locais
-│  │  ├─ hydrant/                    # Folhas: detalhe do hidrante, editar/ver marcador
+│  │  │  └─ HydrantLayer.tsx         # Camadas: cluster de hidrantes, etiquetas, pins de hidrantes salvos
+│  │  ├─ hydrant/                    # Folhas: detalhe do hidrante, salvar/editar hidrante salvo
 │  │  └─ ui/BottomSheet.tsx          # Componente reutilizável de sheet inferior
-│  ├─ hooks/                         # React hooks: hidrantes, marcadores e status de sync
+│  ├─ hooks/                         # React hooks: hidrantes, hidrantes salvos e status de sync
 │  ├─ lib/
 │  │  ├─ db.ts                       # Banco IndexedDB (Dexie) e schema
 │  │  ├─ supabase.ts                 # Cliente Supabase (somente leitura)
 │  │  ├─ maps.ts                     # Abertura do Google Maps com a coordenada
-│  │  ├─ markerTypes.ts              # Tipos e cores dos marcadores
+│  │  ├─ savedTypes.ts               # Tags, cores e rótulos dos hidrantes salvos
 │  │  └─ types.ts                    # Tipos de domínio
 │  └─ services/syncService.ts        # Sincronização com o Supabase
 ├─ vite.config.ts                    # Vite + configuração do PWA/workbox
@@ -189,7 +189,7 @@ Os tiles do mapa requerem uma **API key do CARTO**, fornecida pela variável `VI
 - **Fonte oficial**: Supabase (`public.hidrantes`).
 - **Armazenamento local** (IndexedDB, bd `hidrante-app-db`):
   - `hidrantes` — espelho local da base (chave `id`, índice `updated_at`);
-  - `markers` — marcadores criados pelo usuário no dispositivo (não sincronizados com o servidor);
+  - `saved` — hidrantes salvos pelo usuário no dispositivo (não sincronizados com o servidor);
   - `meta` — metadados internos, como o `last_synced_at`.
 - **Sincronização**: incremental por `updated_at`, com recarga completa automática quando as contagens divergem; lotes de 1.000 registros. O `last_synced_at` é derivado do maior `updated_at` presente localmente.
 - **Sem conexão**: o app continua utilizável com os dados do IndexedDB, o mapa base cacheado e o service worker servindo o aplicativo. Ao voltar a ficar online, a sincronização é retomada sozinha.
@@ -209,7 +209,7 @@ Implementado:
 
 - Busca e visualização de hidrantes no mapa, com detalhes cadastrais.
 - Navegação até o hidrante pelo Google Maps.
-- Marcadores de campo (criar, editar, remover).
+- Hidrantes salvos (salvar, editar, remover).
 - Consulta offline e sincronização da base.
 
 Planejado:

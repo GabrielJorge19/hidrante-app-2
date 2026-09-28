@@ -27,7 +27,7 @@ A página deve comunicar com clareza **qual problema o aplicativo resolve** e **
 - **Mapa dos hidrantes** — todos os hidrantes são exibidos em um mapa; em zoom aproximado eles se agrupam em "clusters" (conjuntos numerados) para não poluir a tela; em zoom alto, cada hidrante mostra uma **etiqueta com o seu número** acima do ícone.
 - **Ficha do hidrante** — ao tocar em um hidrante, o mapa centraliza automaticamente nele e uma folha inferior (bottom sheet) mostra os dados cadastrais: tipo, endereço, bairro, distrito, subprefeitura, região, status.
 - **Navegação pelo Google Maps** — botão **"Ir para"** que abre o Google Maps traçando a rota até a coordenada do hidrante.
-- **Marcadores de campo** — o colaborador pode criar marcadores no mapa (por exemplo: ponto de apoio, obra, hidrante reservado, em manutenção, ponto de risco ou tipo personalizado com cor própria), com nome e observações, e depois editar ou excluir. Os marcadores são criados **a partir da ficha de um hidrante** (ancorados na posição dele) — não é possível criar um marcador em qualquer lugar do mapa.
+- **Hidrantes salvos** — o colaborador pode salvar hidrantes para destacá-los no mapa (por exemplo: em manutenção, voltar para verificar, ou tipo personalizado com cor própria), com observações, e depois editar ou remover. O salvamento é feito **a partir da ficha do hidrante** (ancorado no próprio hidrante) — não existe um marcador separado da entidade hidrante.
 - **Funciona offline** — o app é instalável (PWA), os dados ficam salvos no dispositivo e o mapa base é cacheado; dá para buscar e consultar sem internet.
 - **Sincronização da base** — na primeira abertura o app baixa a base completa do hidrante; depois, atualiza apenas o que mudou (sincronização incremental). Há sincronização automática e um botão manual "Atualizar agora".
 - **Indicador de status** — o menu mostra se o app está sincronizado, sincronizando ou offline, e o horário da última sincronização.
@@ -52,7 +52,7 @@ Estrutura recomendada (adapte com bom senso):
 
 1. **Hero** — Nome do produto, frase curta do que ele faz ("Localize hidrantes, chegue até eles e trabalhe em campo com confiança — mesmo offline"), e um call-to-action (ex.: "Conheça o aplicativo" / "Como funciona").
 2. **Problema / Contexto** — Explicar o dia a dia das equipes de manutenção de hidrantes em São Paulo e por que localizar e navegar até o equipamento é essencial.
-3. **Solução / Funcionalidades** — Apresentar cada funcionalidade real (busca por identificação, mapa com clusters e etiquetas, ficha do hidrante, navegação pelo Google Maps, marcadores de campo, funcionamento offline e sincronização). Layout de cards ou alternância de blocos com títulos + 1-2 frases cada.
+3. **Solução / Funcionalidades** — Apresentar cada funcionalidade real (busca por identificação, mapa com clusters e etiquetas, ficha do hidrante, navegação pelo Google Maps, hidrantes salvos, funcionamento offline e sincronização). Layout de cards ou alternância de blocos com títulos + 1-2 frases cada.
 4. **Tecnologias** — Seção técnica (pode ser em blocos/ícones): React, TypeScript, Vite, PWA, Leaflet + leaflet.markercluster, CARTO basemaps, Supabase, IndexedDB/Dexie, GitHub Actions + GitHub Pages.
 5. **Arquitetura (breve)** — Explicar de forma simples: o **Supabase** é a fonte oficial dos dados; o **IndexedDB (Dexie)** guarda os dados no dispositivo para funcionar offline; o **mapa (Leaflet)** usa tiles da **CARTO** com cache offline; a sincronização é incremental por data de atualização, com recarga completa quando necessário. Um diagrama simples de fluxo pode ajudar (ex.: Servidor → IndexedDB → Interface).
 6. **Para quem é** — Equipes de manutenção em campo.
@@ -64,7 +64,7 @@ Estrutura recomendada (adapte com bom senso):
 - **Frontend:** React 19 + TypeScript, empacotado com Vite 8.
 - **Mapa:** Leaflet com a extensão leaflet.markercluster (agrupamento em clusters). Base cartográfica do **CARTO** (estilo Positron — sem ícones de comércio). Tiles cacheados para uso offline.
 - **Dados remotos:** Supabase (Postgres/PostgREST), acesso somente leitura (RLS com permissão de SELECT para a role anônima), ~5.500 registros na tabela `hidrantes`.
-- **Dados locais:** IndexedDB gerenciado pelo Dexie (tabelas: `hidrantes`, `markers`, `meta`).
+- **Dados locais:** IndexedDB gerenciado pelo Dexie (tabelas: `hidrantes`, `saved`, `meta`).
 - **Sincronização:** busca em lotes de 1.000 registros; modo incremental por `updated_at`; recarga completa automática quando a contagem local difere da remota (ex.: primeira instalação); re-sincroniza ao reabrir o app, a cada 60s, ao reconectar e pelo botão "Atualizar agora".
 - **PWA:** instalável, atualização automática do service worker, aviso de "nova versão disponível", cache de app e de tiles.
 - **Deploy:** GitHub Actions publica o app no GitHub Pages a cada push na branch `main`.
@@ -74,7 +74,7 @@ Estrutura recomendada (adapte com bom senso):
 
 **IMPORTANTE: só o que está no roadmap abaixo; não invente nada além.**
 
-- **Implementado:** busca por identificação; mapa com clusters e etiquetas; ficha detalhada do hidrante; navegação pelo Google Maps; marcadores de campo (criar/editar/excluir); uso offline; sincronização incremental e manual; status de sincronização.
+- **Implementado:** busca por identificação; mapa com clusters e etiquetas; ficha detalhada do hidrante; navegação pelo Google Maps; hidrantes salvos (salvar/editar/remover); uso offline; sincronização incremental e manual; status de sincronização.
 - **Planejado (futuro):** integração com o **sistema de manutenção**, para que os colaboradores vejam no app quais manutenções/ordens de serviço precisam executar; navegação direta a partir das atividades (de uma ordem de serviço para o hidrante correspondente); expansão das funcionalidades de campo.
 
 Nunca apresente os itens planejados como se já existissem — marque-os claramente como "em desenvolvimento / futuros".
