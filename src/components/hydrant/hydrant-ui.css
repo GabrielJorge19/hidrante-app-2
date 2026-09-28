@@ -8,22 +8,38 @@
 .hydrant-summary {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 14px;
+  align-items: stretch;
+  gap: 12px;
 }
 
-.hydrant-summary-type {
+.hydrant-type-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: #2e7d32;
-  font-size: 16px;
-  font-weight: 600;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.hydrant-summary-type svg {
-  width: 30px;
-  height: 30px;
+.hydrant-type-box {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.hydrant-type-box svg {
+  width: 36px;
+  height: 36px;
+}
+
+.hydrant-type-box img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 .hydrant-summary .sheet-actions {
@@ -31,29 +47,135 @@
   width: 100%;
 }
 
-.marker-context {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: #f5f5f5;
-}
-
-.marker-context-list {
-  display: flex;
+.save-chip {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 9px 16px;
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  font-family: inherit;
+  color: #555;
+  background: #f0f0f0;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 24px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
-.marker-context-notes {
+.save-chip.saved {
+  color: #2e7d32;
+  background: #f4faf5;
+  border-color: #c8e6c9;
+}
+
+.save-chip-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.save-control {
+  position: relative;
+}
+
+.save-menu {
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 1100;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #ececec;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.save-menu.above {
+  transform: translateX(-50%) translateY(-100%);
+}
+
+.save-menu {
+  animation: save-menu-fade 0.14s ease;
+}
+
+@keyframes save-menu-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.save-menu-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 2px;
+  text-align: center;
+}
+
+.save-menu-confirm-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+}
+
+.save-menu-confirm-text {
+  margin: 0;
   font-size: 13px;
-  color: #666;
-  white-space: pre-wrap;
+  color: #888;
+}
+
+.save-menu-confirm-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.save-menu-confirm-actions .sheet-button {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.save-menu .type-picker {
+  justify-content: center;
+}
+
+.save-menu-color {
+  width: 100%;
+}
+
+.field-input.save-notes {
+  width: 100%;
+  min-height: 34px;
+  padding: 8px 0 4px;
+  font-size: 14px;
+  color: #333;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  resize: none;
+  overflow: hidden;
+}
+
+.field-input.save-notes:focus {
+  border-color: transparent;
+  box-shadow: 0 1px 0 #2e7d32;
 }
 
 .field {
@@ -150,16 +272,10 @@
   border-color: #2e7d32;
 }
 
-.marker-form {
+.saved-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.coords-hint {
-  font-size: 13px;
-  color: #888;
-  font-family: ui-monospace, Consolas, monospace;
 }
 
 .form-error {
@@ -170,15 +286,16 @@
 .sheet-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   margin-top: 16px;
 }
 
 .sheet-button {
   flex: 1;
-  padding: 12px;
-  font-size: 15px;
+  padding: 12px 8px;
+  font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
   border: none;
   border-radius: 10px;
   cursor: pointer;

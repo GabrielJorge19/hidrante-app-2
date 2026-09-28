@@ -1,5 +1,7 @@
 import type { ReactElement } from 'react'
-import { hydranteTipoKey } from '../../lib/hydranteTypes'
+import { hydranteTipoKey, hydranteTipoLabel } from '../../lib/hydranteTypes'
+import colunaIco from '../../assets/hidrantes/coluna.ico'
+import subterraneoIco from '../../assets/hidrantes/subterraneo.ico'
 
 const baseProps = {
   width: 24,
@@ -13,28 +15,6 @@ const baseProps = {
   'aria-hidden': true,
 } as const
 
-function ColunaIcon(): ReactElement {
-  return (
-    <svg {...baseProps}>
-      <path d="M9.5 3.5v17.5" />
-      <path d="M14.5 3.5v17.5" />
-      <path d="M9.5 3.5a2.5 2.5 0 0 1 5 0" />
-      <path d="M7 21h10" />
-    </svg>
-  )
-}
-
-function SubterraneoIcon(): ReactElement {
-  return (
-    <svg {...baseProps}>
-      <path d="M3 12h6" />
-      <path d="M15 12h6" />
-      <rect x="9" y="8" width="6" height="8" rx="1.2" />
-      <path d="M12 12h.01" />
-    </svg>
-  )
-}
-
 function BicaIcon(): ReactElement {
   return (
     <svg {...baseProps}>
@@ -46,24 +26,35 @@ function BicaIcon(): ReactElement {
   )
 }
 
-function GenericoIcon(): ReactElement {
+function RetiradoIcon(): ReactElement {
   return (
     <svg {...baseProps}>
       <path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z" />
+      <path d="M8 16l8-8" />
+      <path d="M16 16L8 8" />
     </svg>
   )
 }
 
-const ICONS: Record<string, () => ReactElement> = {
-  coluna: ColunaIcon,
-  subterraneo: SubterraneoIcon,
-  bica: BicaIcon,
+const IMAGES: Record<string, string> = {
+  coluna: colunaIco,
+  subterraneo: subterraneoIco,
 }
 
 export function HydranteTipoIcon({ tipo }: { tipo?: string | null }): ReactElement {
   const key = hydranteTipoKey(tipo)
-  const Icon = ICONS[key] ?? GenericoIcon
-  return <Icon />
+  const src = IMAGES[key]
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt={`Hidrante ${hydranteTipoLabel(tipo)}`}
+        className="hydrant-type-img"
+      />
+    )
+  }
+  if (key === 'bica') return <BicaIcon />
+  return <RetiradoIcon />
 }
 
 export default HydranteTipoIcon

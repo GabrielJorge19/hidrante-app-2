@@ -15,15 +15,11 @@ export interface Hidrante {
   synced_at?: number
 }
 
-export interface LocalMarker {
-  id: string
-  label: string
+export interface SavedHidrante {
+  hydranteId: number
   notes: string
   typeId?: string
   color?: string
-  hydranteId?: number
-  latitude: number
-  longitude: number
   createdAt: number
 }
 

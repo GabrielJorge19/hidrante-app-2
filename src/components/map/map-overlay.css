@@ -54,7 +54,7 @@
   background: #2e7d32;
 }
 
-.pin-local::before {
+.pin-saved::before {
   background: var(--pin-color, #1a73e8);
 }
 

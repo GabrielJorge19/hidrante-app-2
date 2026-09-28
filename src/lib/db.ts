@@ -1,10 +1,22 @@
 import Dexie, { type Table } from 'dexie'
-import type { Hidrante, LocalMarker, MetaRow } from './types'
+import type { Hidrante, MetaRow, SavedHidrante } from './types'
 import { distanceInMeters } from './geo'
+
+type LegacyMarker = {
+  id: string
+  label: string
+  notes: string
+  typeId?: string
+  color?: string
+  hydranteId?: number
+  latitude: number
+  longitude: number
+  createdAt: number
+}
 
 class HidranteDB extends Dexie {
   hidrantes!: Table<Hidrante, number>
-  markers!: Table<LocalMarker, string>
+  saved!: Table<SavedHidrante, number>
   meta!: Table<MetaRow, string>
 
   constructor() {
@@ -32,7 +44,7 @@ class HidranteDB extends Dexie {
         await tx
           .table('markers')
           .toCollection()
-          .modify((marker: LocalMarker) => {
+          .modify((marker: LegacyMarker) => {
             if (marker.hydranteId != null || hidrantes.length === 0) return
             let bestId: number | undefined
             let bestDist = Infinity
@@ -50,6 +62,28 @@ class HidranteDB extends Dexie {
             }
             if (bestId != null && bestDist <= 50) marker.hydranteId = bestId
           })
+      })
+    this.version(4)
+      .stores({
+        hidrantes: 'id, updated_at',
+        saved: 'hydranteId',
+        meta: 'key',
+      })
+      .upgrade(async (tx) => {
+        const markers = await tx.table('markers').toArray()
+        const payload: SavedHidrante[] = markers
+          .filter((marker) => marker.hydranteId != null)
+          .map((marker) => ({
+            hydranteId: marker.hydranteId as number,
+            notes: marker.notes,
+            typeId: marker.typeId,
+            color: marker.color,
+            createdAt: marker.createdAt,
+          }))
+        if (payload.length > 0) {
+          await tx.table('saved').bulkPut(payload)
+        }
+        await tx.table('markers').clear()
       })
   }
 }

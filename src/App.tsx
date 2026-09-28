@@ -10,11 +10,9 @@ import LocateButton from './components/map/LocateButton'
 import NearbyButton from './components/map/NearbyButton'
 import BaseMarker from './components/map/BaseMarker'
 import HydrantDetailSheet from './components/hydrant/HydrantDetailSheet'
-import MarkerEditSheet, { type Point } from './components/hydrant/MarkerEditSheet'
-import MarkerDetailSheet from './components/hydrant/MarkerDetailSheet'
 import { useHydrantes } from './hooks/useHydrantes'
-import { useCustomMarkers } from './hooks/useCustomMarkers'
-import { db } from './lib/db'
+import { useSavedHydrantes } from './hooks/useSavedHydrantes'
+import { useSyncStatus } from './hooks/useSyncStatus'
 import {
   EMPTY_FILTERS,
   activeFilterCount,
@@ -22,14 +20,11 @@ import {
   type HidranteFilters,
 } from './lib/hidranteFilters'
 import { distanceInMeters } from './lib/geo'
-import type { Hidrante, LocalMarker } from './lib/types'
+import type { Hidrante } from './lib/types'
 
 function App() {
   const [map, setMap] = useState<L.Map | null>(null)
   const [selectedHidrante, setSelectedHidrante] = useState<Hidrante | null>(null)
-  const [selectedMarker, setSelectedMarker] = useState<LocalMarker | null>(null)
-  const [draftPoint, setDraftPoint] = useState<Point | null>(null)
-  const [draftHydranteId, setDraftHydranteId] = useState<number | undefined>(undefined)
   const [filters, setFilters] = useState<HidranteFilters>({ ...EMPTY_FILTERS })
   const [exploreMode, setExploreMode] = useState(false)
   const [focusedHidrante, setFocusedHidrante] = useState<Hidrante | null>(null)
@@ -40,7 +35,16 @@ function App() {
   } | null>(null)
 
   const hidrantes = useHydrantes()
-  const markers = useCustomMarkers()
+  const saved = useSavedHydrantes()
+  useSyncStatus()
+
+  const selectedSaved = useMemo(
+    () =>
+      selectedHidrante
+        ? saved.find((s) => s.hydranteId === selectedHidrante.id) ?? null
+        : null,
+    [saved, selectedHidrante],
+  )
 
   const filteredHidrantes = useMemo(
     () => hidrantes.filter((h) => matchesFilters(h, filters)),
@@ -75,34 +79,12 @@ function App() {
     (hidrante: Hidrante) => {
       flyTo(hidrante.latitude, hidrante.longitude)
       setSelectedHidrante(hidrante)
-      setSelectedMarker(null)
     },
     [flyTo],
   )
 
-  const handleSelectMarker = useCallback(
-    (marker: LocalMarker) => {
-      setSelectedMarker(marker)
-      const linked =
-        marker.hydranteId != null
-          ? hidrantes.find((h) => h.id === marker.hydranteId) ?? null
-          : null
-      setSelectedHidrante(linked)
-    },
-    [hidrantes],
-  )
-
-  const closeSheets = () => {
-    setDraftPoint(null)
-    setDraftHydranteId(undefined)
-    setSelectedMarker(null)
-    setSelectedHidrante(null)
-    setFocusedHidrante(null)
-  }
-
   const closeHidranteSheet = () => {
     setSelectedHidrante(null)
-    setSelectedMarker(null)
     setFocusedHidrante(null)
   }
 
@@ -111,37 +93,6 @@ function App() {
     setFocusedHidrante(hidrante)
     setSelectedHidrante(hidrante)
   }
-
-  const handleAddMarkerAtHidrante = (hidrante: Hidrante) => {
-    setSelectedHidrante(null)
-    setFocusedHidrante(null)
-    setSelectedMarker(null)
-    setDraftHydranteId(hidrante.id)
-    setDraftPoint({
-      latitude: hidrante.latitude,
-      longitude: hidrante.longitude,
-    })
-  }
-
-  const handleEditMarker = useCallback(() => {
-    if (!selectedMarker) return
-    setSelectedHidrante(null)
-    setFocusedHidrante(null)
-    setDraftHydranteId(selectedMarker.hydranteId)
-    setDraftPoint({
-      latitude: selectedMarker.latitude,
-      longitude: selectedMarker.longitude,
-    })
-  }, [selectedMarker])
-
-  const handleDeleteMarker = useCallback(() => {
-    if (!selectedMarker) return
-    db.markers.delete(selectedMarker.id)
-    setDraftPoint(null)
-    setSelectedMarker(null)
-    setSelectedHidrante(null)
-    setFocusedHidrante(null)
-  }, [selectedMarker])
 
   const handleNearbyLocate = useCallback(
     (lat: number, lng: number, radius: number) => {
@@ -167,9 +118,9 @@ function App() {
       <HydrantLayer
         map={map}
         hidrantes={visibleHidrantes}
-        markers={markers}
+        allHidrantes={hidrantes}
+        saved={saved}
         onSelectHidrante={handleSelectHidrante}
-        onSelectMarker={handleSelectMarker}
       />
       <ExploreToggle active={exploreMode} onClick={() => setExploreMode((value) => !value)} />
       <NearbyButton
@@ -189,37 +140,8 @@ function App() {
       <HydrantDetailSheet
         open={!!selectedHidrante}
         hidrante={selectedHidrante}
-        marker={selectedMarker}
+        saved={selectedSaved}
         onClose={closeHidranteSheet}
-        onAddMarker={() =>
-          selectedHidrante && handleAddMarkerAtHidrante(selectedHidrante)
-        }
-        onEditMarker={handleEditMarker}
-        onDeleteMarker={handleDeleteMarker}
-      />
-
-      <MarkerEditSheet
-        key={selectedMarker?.id ?? 'new'}
-        open={!!draftPoint}
-        point={draftPoint}
-        marker={selectedMarker}
-        hydranteId={draftHydranteId}
-        onClose={closeSheets}
-        onSaved={closeSheets}
-      />
-
-      <MarkerDetailSheet
-        open={!!selectedMarker && !draftPoint && !selectedHidrante}
-        marker={selectedMarker}
-        onClose={() => setSelectedMarker(null)}
-        onEdit={() =>
-          selectedMarker &&
-          setDraftPoint({
-            latitude: selectedMarker.latitude,
-            longitude: selectedMarker.longitude,
-          })
-        }
-        onDeleted={closeSheets}
       />
 
       <ReloadPrompt />

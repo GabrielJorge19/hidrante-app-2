@@ -5,11 +5,12 @@ interface BottomSheetProps {
   open: boolean
   onClose: () => void
   title?: string
+  titleAriaLabel?: string
   compact?: boolean
   children: ReactNode
 }
 
-function BottomSheet({ open, onClose, title, compact = false, children }: BottomSheetProps) {
+function BottomSheet({ open, onClose, title, titleAriaLabel, compact = false, children }: BottomSheetProps) {
   if (!open) return null
 
   return (
@@ -41,7 +42,11 @@ function BottomSheet({ open, onClose, title, compact = false, children }: Bottom
             </svg>
           </button>
         )}
-        {title && <h2 className="sheet-title">{title}</h2>}
+        {title && (
+          <h2 className="sheet-title" aria-label={titleAriaLabel}>
+            {title}
+          </h2>
+        )}
         <div className="sheet-content">{children}</div>
       </div>
     </div>
