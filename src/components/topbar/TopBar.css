@@ -54,20 +54,6 @@
   font-family: inherit;
 }
 
-.menu-item.status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  padding: 8px;
-}
-
-.menu-item.sub {
-  color: #777;
-  font-size: 13px;
-  padding: 0 8px 8px;
-}
-
 .menu-item.action {
   border: none;
   background: none;
@@ -85,28 +71,6 @@
 
 .menu-item.action:hover {
   background: #e8f5e9;
-}
-
-.sync-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.sync-dot.online {
-  background: #2e7d32;
-}
-
-.sync-dot.syncing {
-  background: #e65100;
-}
-
-.sync-dot.offline {
-  background: #c62828;
-}
-
-.sync-dot.unconfigured {
-  background: #546e7a;
 }
 
 @media (min-width: 768px) {

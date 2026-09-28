@@ -10,6 +10,7 @@ import LocateButton from './components/map/LocateButton'
 import NearbyButton from './components/map/NearbyButton'
 import BaseMarker from './components/map/BaseMarker'
 import HydrantDetailSheet from './components/hydrant/HydrantDetailSheet'
+import SettingsSheet from './components/settings/SettingsSheet'
 import { useHydrantes } from './hooks/useHydrantes'
 import { useSavedHydrantes } from './hooks/useSavedHydrantes'
 import { useSyncStatus } from './hooks/useSyncStatus'
@@ -20,6 +21,11 @@ import {
   type HidranteFilters,
 } from './lib/hidranteFilters'
 import { distanceInMeters } from './lib/geo'
+import {
+  getMapStyle,
+  setMapStyle as persistMapStyle,
+  type MapStyle,
+} from './lib/preferences'
 import type { Hidrante } from './lib/types'
 
 function App() {
@@ -33,6 +39,8 @@ function App() {
     lng: number
     radius: number
   } | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [mapStyle, setMapStyleState] = useState<MapStyle>(getMapStyle)
 
   const hidrantes = useHydrantes()
   const saved = useSavedHydrantes()
@@ -67,6 +75,11 @@ function App() {
   }, [focusedHidrante, nearby, nearbyHidrantes, exploreMode, filteredHidrantes])
 
   const handleMapReady = useCallback((nextMap: L.Map) => setMap(nextMap), [])
+
+  const handleMapStyleChange = useCallback((style: MapStyle) => {
+    persistMapStyle(style)
+    setMapStyleState(style)
+  }, [])
 
   const flyTo = useCallback(
     (latitude: number, longitude: number) => {
@@ -113,7 +126,7 @@ function App() {
 
   return (
     <>
-      <MapView onMapReady={handleMapReady} />
+      <MapView onMapReady={handleMapReady} mapStyle={mapStyle} />
       <BaseMarker map={map} />
       <HydrantLayer
         map={map}
@@ -135,6 +148,7 @@ function App() {
         filters={filters}
         onFiltersChange={handleFiltersChange}
         onSelect={handleHidranteSearch}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       <HydrantDetailSheet
@@ -142,6 +156,13 @@ function App() {
         hidrante={selectedHidrante}
         saved={selectedSaved}
         onClose={closeHidranteSheet}
+      />
+
+      <SettingsSheet
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        mapStyle={mapStyle}
+        onMapStyleChange={handleMapStyleChange}
       />
 
       <ReloadPrompt />

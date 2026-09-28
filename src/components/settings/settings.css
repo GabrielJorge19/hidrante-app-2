@@ -1,0 +1,78 @@
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #888;
+}
+
+.settings-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #111;
+  background: #fff;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.settings-option.selected {
+  border-color: #2e7d32;
+  color: #2e7d32;
+  background: #f4faf5;
+}
+
+.settings-option.toggle {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.settings-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-toggle-desc {
+  font-size: 13px;
+  font-weight: 400;
+  color: #888;
+}
+
+.settings-toggle-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2e7d32;
+  background: #f4faf5;
+  border: 1px solid #c8e6c9;
+  padding: 6px 10px;
+  border-radius: 16px;
+}
+
+.settings-note {
+  font-size: 13px;
+  color: #888;
+}
