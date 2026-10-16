@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react'
 import { hydranteTipoKey, hydranteTipoLabel } from '../../lib/hydranteTypes'
 import colunaIco from '../../assets/hidrantes/coluna.ico'
-import subterraneoIco from '../../assets/hidrantes/subterraneo.ico'
+import subterraneoIco from '../../assets/hidrantes/subterraneo.webp'
 
 const baseProps = {
   width: 24,
