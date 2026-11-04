@@ -320,6 +320,11 @@
   color: #fff;
 }
 
+.sheet-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .sheet-button.danger {
   background: #dc2626;
   color: #fff;
