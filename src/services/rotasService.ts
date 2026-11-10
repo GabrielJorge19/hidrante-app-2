@@ -231,9 +231,10 @@ export async function marcarParada(params: {
   ordemServico: string | null
   status: ParadaStatus
   problemaTipo?: TipoProblema
+  observacao?: string
   fotos?: Blob[]
 }): Promise<{ enviado: boolean }> {
-  const { paradaKey, rotaId, hidranteId, ordemServico, status, problemaTipo, fotos } = params
+  const { paradaKey, rotaId, hidranteId, ordemServico, status, problemaTipo, observacao, fotos } = params
 
   if (status === 'nao_realizado') {
     if (!problemaTipo || !fotos || fotos.length < 1 || fotos.length > 3) {
@@ -253,6 +254,7 @@ export async function marcarParada(params: {
       latitude: null,
       longitude: null,
       problemaTipo: problemaTipo ?? null,
+      problemaObservacao: observacao?.trim() || null,
       fotos: fotos ?? null,
       criadoEm: Date.now(),
     })
@@ -266,7 +268,14 @@ export async function marcarParada(params: {
 
   try {
     if (status === 'nao_realizado' && problemaTipo && fotos) {
-      await enviarProblema({ rotaId, hidranteId, ordemServico, problemaTipo, fotos })
+      await enviarProblema({
+        rotaId,
+        hidranteId,
+        ordemServico,
+        problemaTipo,
+        observacao,
+        fotos,
+      })
     } else {
       await enviarParada({ rotaId, hidranteId, ordemServico, status })
     }
@@ -288,6 +297,7 @@ async function enviarProblema(params: {
   hidranteId: number
   ordemServico: string | null
   problemaTipo: TipoProblema
+  observacao?: string | null
   fotos: Blob[]
 }) {
   if (!supabase) throw new Error('Supabase não configurado.')
@@ -314,6 +324,7 @@ async function enviarProblema(params: {
     p_hidrante_id: params.hidranteId,
     p_ordem_servico: params.ordemServico,
     p_tipo_problema: params.problemaTipo,
+    p_observacao: params.observacao?.trim() || null,
     p_fotos: caminhos,
   })
 
@@ -362,6 +373,7 @@ export async function sincronizarPendencias(): Promise<number> {
           hidranteId: pendente.hidranteId,
           ordemServico: pendente.ordemServico,
           problemaTipo: pendente.problemaTipo,
+          observacao: pendente.problemaObservacao,
           fotos: pendente.fotos,
         })
       } else {

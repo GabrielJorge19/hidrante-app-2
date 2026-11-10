@@ -68,6 +68,7 @@ export interface ParadaPendente {
   latitude: number | null
   longitude: number | null
   problemaTipo: TipoProblema | null
+  problemaObservacao: string | null
   fotos: Blob[] | null
   criadoEm: number
 }

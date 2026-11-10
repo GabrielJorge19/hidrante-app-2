@@ -34,6 +34,7 @@ export type MarcarParadaArgs = {
   ordemServico: string | null
   status: ParadaStatus
   problemaTipo?: TipoProblema
+  observacao?: string
   fotos?: Blob[]
 }
 
