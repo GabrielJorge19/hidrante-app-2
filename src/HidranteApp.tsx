@@ -15,7 +15,7 @@ import { useAuth } from './auth/AuthContext'
 import { useHydrantes } from './hooks/useHydrantes'
 import { useSavedHydrantes } from './hooks/useSavedHydrantes'
 import { useSyncStatus } from './hooks/useSyncStatus'
-import { useMinhaRota, type HidranteDoDia } from './hooks/useMinhaRota'
+import { useMinhaRota, type HidranteDaRota } from './hooks/useMinhaRota'
 import { distanceInMeters } from './lib/geo'
 import {
   getMapStyle,
@@ -24,7 +24,7 @@ import {
 } from './lib/preferences'
 import type { Hidrante } from './lib/types'
 
-function hidranteDaRota(parcial: HidranteDoDia, catalogo: Hidrante[]): Hidrante {
+function hidranteDaRota(parcial: HidranteDaRota, catalogo: Hidrante[]): Hidrante {
   const completo = catalogo.find((h) => h.id === parcial.hidranteId)
   if (completo) return { ...completo, tipo: completo.tipo ?? parcial.tipo }
 
@@ -92,7 +92,7 @@ function HidranteApp() {
 
   const rotaDoDia = useMemo((): MarcadorServico[] => {
     if (focusedHidrante || nearby) return []
-    return minhaRota.hidrantesDoDia.map((parcial) => ({
+    return minhaRota.hidrantesDaRota.map((parcial) => ({
       hidrante: hidranteDaRota(parcial, hidrantes),
       numero: parcial.numero,
       status: parcial.status,
@@ -100,7 +100,7 @@ function HidranteApp() {
       rotaId: parcial.rotaId,
       ordemServico: parcial.ordemServico,
     }))
-  }, [focusedHidrante, nearby, minhaRota.hidrantesDoDia, hidrantes])
+  }, [focusedHidrante, nearby, minhaRota.hidrantesDaRota, hidrantes])
 
   const handleMapReady = useCallback((nextMap: L.Map) => setMap(nextMap), [])
 

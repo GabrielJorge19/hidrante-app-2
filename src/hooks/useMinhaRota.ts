@@ -6,10 +6,15 @@ import {
   sincronizarPendencias,
 } from '../services/rotasService'
 import type { TipoProblema } from '../lib/problemas'
-import type { MinhaRota, ParadaPendente, ParadaStatus } from '../lib/rotaTypes'
+import type {
+  MinhaRota,
+  ParadaPendente,
+  ParadaStatus,
+  RotaParadaCache,
+} from '../lib/rotaTypes'
 
-/** Parada de hoje, na ordem da rota, para o marcador numerado do mapa. */
-export interface HidranteDoDia {
+/** Parada que aparece no mapa, numerada na ordem da rota. */
+export interface HidranteDaRota {
   hidranteId: number
   latitude: number
   longitude: number
@@ -51,13 +56,50 @@ function dataDaRota(valor: string | null): string | null {
   return match?.[1] ?? null
 }
 
-/** Paradas das rotas de hoje, numeradas na ordem da lista de cada rota. */
-export function extrairHidrantesDoDia(rotas: MinhaRota[]): HidranteDoDia[] {
+/** Data local (Y-M-D) de um timestamp ISO. */
+function dataLocalDoTimestamp(valor: string | null): string | null {
+  if (!valor) return null
+  const data = new Date(valor)
+  if (Number.isNaN(data.getTime())) return null
+  const mes = String(data.getMonth() + 1).padStart(2, '0')
+  const dia = String(data.getDate()).padStart(2, '0')
+  return `${data.getFullYear()}-${mes}-${dia}`
+}
+
+/**
+ * Regras de visibilidade no mapa:
+ * - pendente / em andamento: sempre, de qualquer rota do técnico;
+ * - concluído: só no dia em que foi concluído;
+ * - problema reportado: só no dia em que foi reportado;
+ * - cancelado: nunca.
+ */
+function deveExibirNoMapa(
+  parada: RotaParadaCache,
+  dataRota: string | null,
+  hoje: string,
+): boolean {
+  switch (parada.status) {
+    case 'pendente':
+    case 'em_andamento':
+      return true
+    case 'concluido':
+      return dataLocalDoTimestamp(parada.concluido_em) === hoje
+    case 'nao_realizado':
+      return (
+        (dataLocalDoTimestamp(parada.problema_reportado_em) ?? dataRota) === hoje
+      )
+    default:
+      return false
+  }
+}
+
+/** Paradas visíveis no mapa, numeradas na ordem da lista de cada rota. */
+export function extrairHidrantesDaRota(rotas: MinhaRota[]): HidranteDaRota[] {
   const hoje = dataLocalHoje()
-  const servicos: HidranteDoDia[] = []
+  const servicos: HidranteDaRota[] = []
 
   for (const item of rotas) {
-    if (dataDaRota(item.rota.data) !== hoje) continue
+    const dataRota = dataDaRota(item.rota.data)
 
     const paradas = item.paradas.slice().sort(
       (a, b) =>
@@ -67,6 +109,8 @@ export function extrairHidrantesDoDia(rotas: MinhaRota[]): HidranteDoDia[] {
     )
 
     paradas.forEach((parada, indice) => {
+      if (!deveExibirNoMapa(parada, dataRota, hoje)) return
+
       servicos.push({
         hidranteId: parada.hidrante_id,
         latitude: parada.latitude,
@@ -162,7 +206,7 @@ export function useMinhaRota(usuarioId: string | null | undefined) {
     [usuarioId, atualizarPendentes],
   )
 
-  const hidrantesDoDia = useMemo(() => extrairHidrantesDoDia(rotas), [rotas])
+  const hidrantesDaRota = useMemo(() => extrairHidrantesDaRota(rotas), [rotas])
 
   return {
     rotas,
@@ -171,7 +215,7 @@ export function useMinhaRota(usuarioId: string | null | undefined) {
     pendencias,
     pendentes: pendencias.length,
     erro,
-    hidrantesDoDia,
+    hidrantesDaRota,
     atualizar,
     marcar,
     atualizarPendentes,

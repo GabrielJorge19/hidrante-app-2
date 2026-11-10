@@ -41,6 +41,7 @@ type LinhaParada = {
   checkin_lat: number | null
   checkin_lng: number | null
   concluido_em: string | null
+  problema_reportado_em: string | null
   created_at: string
 }
 
@@ -70,6 +71,7 @@ function normalizarParada(linha: LinhaParada): RotaParadaCache {
     checkin_lat: linha.checkin_lat,
     checkin_lng: linha.checkin_lng,
     concluido_em: linha.concluido_em,
+    problema_reportado_em: linha.problema_reportado_em,
     created_at: linha.created_at,
   }
 }
@@ -106,6 +108,10 @@ async function aplicarPendentes(
           : parada.checkin_lng,
       concluido_em:
         pendente.status === 'concluido'
+          ? new Date(pendente.criadoEm).toISOString()
+          : null,
+      problema_reportado_em:
+        pendente.status === 'nao_realizado'
           ? new Date(pendente.criadoEm).toISOString()
           : null,
     }
@@ -163,7 +169,7 @@ export async function carregarMinhasRotas(
       supabase
         .from('vw_rotas_itens')
         .select(
-          'rota_id, parada_key, hidrante_id, ativo, endereco, bairro, distrito, subprefeitura, tipo, ordem_servico, ordem_servico_key, os_status, item_status, observacao, latitude, longitude, checkin_at, checkin_lat, checkin_lng, concluido_em, created_at',
+          'rota_id, parada_key, hidrante_id, ativo, endereco, bairro, distrito, subprefeitura, tipo, ordem_servico, ordem_servico_key, os_status, item_status, observacao, latitude, longitude, checkin_at, checkin_lat, checkin_lng, concluido_em, problema_reportado_em, created_at',
         )
         .eq('encarregado_id', usuarioId)
         .order('created_at', { ascending: true })
@@ -299,6 +305,8 @@ async function enviarProblema(params: {
   problemaTipo: TipoProblema
   observacao?: string | null
   fotos: Blob[]
+  /** Horário em que o relato foi feito no dispositivo (fila offline). */
+  reportadoEm?: number | null
 }) {
   if (!supabase) throw new Error('Supabase não configurado.')
 
@@ -325,6 +333,10 @@ async function enviarProblema(params: {
     p_ordem_servico: params.ordemServico,
     p_tipo_problema: params.problemaTipo,
     p_observacao: params.observacao?.trim() || null,
+    p_reportado_em:
+      params.reportadoEm != null
+        ? new Date(params.reportadoEm).toISOString()
+        : null,
     p_fotos: caminhos,
   })
 
@@ -336,6 +348,8 @@ async function enviarParada(params: {
   hidranteId: number
   ordemServico: string | null
   status: ParadaStatus
+  /** Horário em que a conclusão foi feita no dispositivo (fila offline). */
+  concluidoEm?: number | null
 }) {
   if (!supabase) throw new Error('Supabase não configurado.')
 
@@ -347,7 +361,10 @@ async function enviarParada(params: {
     p_observacao: null,
     p_lat: null,
     p_lng: null,
-    p_concluido_em: null,
+    p_concluido_em:
+      params.concluidoEm != null
+        ? new Date(params.concluidoEm).toISOString()
+        : null,
   })
 
   if (error) throw error
@@ -375,6 +392,7 @@ export async function sincronizarPendencias(): Promise<number> {
           problemaTipo: pendente.problemaTipo,
           observacao: pendente.problemaObservacao,
           fotos: pendente.fotos,
+          reportadoEm: pendente.criadoEm,
         })
       } else {
         await enviarParada({
@@ -382,6 +400,8 @@ export async function sincronizarPendencias(): Promise<number> {
           hidranteId: pendente.hidranteId,
           ordemServico: pendente.ordemServico,
           status: pendente.status,
+          concluidoEm:
+            pendente.status === 'concluido' ? pendente.criadoEm : null,
         })
       }
 

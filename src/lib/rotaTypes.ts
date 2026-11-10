@@ -53,6 +53,8 @@ export interface RotaParadaCache {
   checkin_lat: number | null
   checkin_lng: number | null
   concluido_em: string | null
+  /** Momento em que o problema foi reportado (paradas não realizadas). */
+  problema_reportado_em: string | null
   created_at: string
 }
 
