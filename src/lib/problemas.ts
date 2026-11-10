@@ -6,6 +6,7 @@ export const TIPOS_PROBLEMA = [
   'vazamento',
   'hidrante_nao_localizado',
   'registro_obstruido',
+  'hidrante_obstruido',
   'troca_de_tampa',
 ] as const
 
@@ -17,6 +18,7 @@ export const ROTULO_PROBLEMA: Record<TipoProblema, string> = {
   vazamento: 'Vazamento',
   hidrante_nao_localizado: 'Hidrante não localizado',
   registro_obstruido: 'Registro obstruído',
+  hidrante_obstruido: 'Hidrante obstruído',
   troca_de_tampa: 'Troca de tampa',
 }
 
@@ -31,7 +33,7 @@ const COMUNS: TipoProblema[] = [
 export function problemasDoTipo(tipo?: string | null): TipoProblema[] {
   const chave = hydranteTipoKey(tipo)
   if (chave === 'coluna') return [...COMUNS, 'registro_obstruido']
-  if (chave === 'subterraneo') return [...COMUNS, 'troca_de_tampa']
+  if (chave === 'subterraneo') return [...COMUNS, 'hidrante_obstruido', 'troca_de_tampa']
   return COMUNS
 }
 
