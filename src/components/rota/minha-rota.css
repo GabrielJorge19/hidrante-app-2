@@ -365,6 +365,15 @@
   flex: 1 1 100%;
 }
 
+/* Em coluna, o flex-basis dos rótulos vira altura e abria buracos no formulário. */
+.problema-form .minha-rota-pergunta {
+  flex: 0 0 auto;
+}
+
+.problema-form > * {
+  flex-shrink: 0;
+}
+
 .problema-select,
 .problema-arquivo {
   width: 100%;
@@ -388,6 +397,34 @@
 .problema-select {
   text-align: left;
   font-weight: 500;
+}
+
+.problema-observacao {
+  width: 100%;
+  min-height: 38px;
+  max-height: 120px;
+  box-sizing: border-box;
+  padding: 9px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #333;
+  border: 1px solid #e4e4e4;
+  border-radius: 8px;
+  background: #fafafa;
+  resize: none;
+  overflow-y: hidden;
+}
+
+.problema-observacao::placeholder {
+  color: #999;
+}
+
+.problema-observacao:focus {
+  outline: none;
+  border-color: #2e7d32;
+  background: #fff;
 }
 
 .problema-fotos {

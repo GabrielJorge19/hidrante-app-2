@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import BottomSheet from '../ui/BottomSheet'
 import { comprimirFoto } from '../../lib/comprimirFoto'
 import { openInNavigator } from '../../lib/maps'
@@ -22,6 +22,9 @@ interface FotoEscolhida {
   blob: Blob
 }
 
+/** Altura máxima do campo de observação antes de começar a rolar. */
+const ALTURA_MAXIMA_OBSERVACAO = 120
+
 export default function ServicoSheet({
   open,
   servico,
@@ -32,9 +35,21 @@ export default function ServicoSheet({
   const [processando, setProcessando] = useState(false)
   const [confirmando, setConfirmando] = useState<'concluido' | 'problema' | null>(null)
   const [tipoProblema, setTipoProblema] = useState<TipoProblema | ''>('')
+  const [observacao, setObservacao] = useState('')
   const [fotos, setFotos] = useState<FotoEscolhida[]>([])
   const [aviso, setAviso] = useState('')
   const [falha, setFalha] = useState('')
+  const observacaoRef = useRef<HTMLTextAreaElement>(null)
+
+  // Cresce conforme as linhas digitadas, sem estourar o espaço do formulário.
+  useLayoutEffect(() => {
+    const campo = observacaoRef.current
+    if (!campo) return
+    campo.style.height = 'auto'
+    const excedeu = campo.scrollHeight > ALTURA_MAXIMA_OBSERVACAO
+    campo.style.height = `${Math.min(campo.scrollHeight, ALTURA_MAXIMA_OBSERVACAO)}px`
+    campo.style.overflowY = excedeu ? 'auto' : 'hidden'
+  }, [observacao, confirmando])
 
   useEffect(() => {
     if (!aviso) return
@@ -50,6 +65,7 @@ export default function ServicoSheet({
     soltarFotos(fotos)
     setFotos([])
     setTipoProblema('')
+    setObservacao('')
     setConfirmando(null)
   }
 
@@ -96,11 +112,13 @@ export default function ServicoSheet({
         ordemServico: servico.ordemServico,
         status: 'nao_realizado',
         problemaTipo: tipoProblema,
+        observacao: observacao.trim() || undefined,
         fotos: fotos.map((foto) => foto.blob),
       })
       soltarFotos(fotos)
       setFotos([])
       setTipoProblema('')
+      setObservacao('')
       setConfirmando(null)
       setAviso(
         enviado
@@ -231,6 +249,17 @@ export default function ServicoSheet({
                       </option>
                     ))}
                   </select>
+                  <textarea
+                    ref={observacaoRef}
+                    className="problema-observacao"
+                    value={observacao}
+                    onChange={(evento) => setObservacao(evento.target.value)}
+                    placeholder="Observação (opcional)"
+                    aria-label="Observação (opcional)"
+                    rows={1}
+                    maxLength={500}
+                    disabled={processando}
+                  />
                   {fotos.length > 0 && (
                     <div className="problema-fotos">
                       {fotos.map((foto, indice) => (
