@@ -169,7 +169,6 @@ export default function ServicoSheet({
   }
 
   const hidrante = servico?.hidrante
-  const local = [hidrante?.bairro, hidrante?.distrito].filter(Boolean).join(' · ')
   const opcoes = problemasDoTipo(hidrante?.tipo)
   const podeReportar = tipoProblema !== '' && fotos.length >= 1 && fotos.length <= 3
 
@@ -178,21 +177,16 @@ export default function ServicoSheet({
       open={open}
       onClose={onClose}
       compact
-      title={servico ? `Manutenção ${servico.numero}` : ''}
+      title={servico ? String(servico.hidrante.id) : ''}
       titleAriaLabel={
-        servico ? `Manutenção ${servico.numero}` : undefined
+        servico ? `Hidrante ${servico.hidrante.id}` : undefined
       }
     >
       {servico && hidrante && (
         <div className="hydrant-summary">
-          <p className="minha-rota-endereco">
-            {hidrante.endereco || 'Sem endereço cadastrado'}
-          </p>
           <p className="minha-rota-meta">
-            Hidrante #{hidrante.id}
-            {hidrante.ativo ? ` · ativo ${hidrante.ativo}` : ''}
+            Subprefeitura: {hidrante.subprefeitura || '—'}
           </p>
-          {local && <p className="minha-rota-meta">{local}</p>}
           {servico.ordemServico && (
             <p className="minha-rota-meta">OS {servico.ordemServico}</p>
           )}
