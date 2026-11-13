@@ -8,6 +8,7 @@ import {
 import type { TipoProblema } from '../lib/problemas'
 import type {
   MinhaRota,
+  OrdemServicoDaParada,
   ParadaPendente,
   ParadaStatus,
   RotaParadaCache,
@@ -29,14 +30,13 @@ export interface HidranteDaRota {
   status: ParadaStatus
   paradaKey: string
   rotaId: number
-  ordemServico: string | null
+  ordensServico: OrdemServicoDaParada[]
 }
 
 export type MarcarParadaArgs = {
   paradaKey: string
   rotaId: number
   hidranteId: number
-  ordemServico: string | null
   status: ParadaStatus
   problemaTipo?: TipoProblema
   observacao?: string
@@ -104,8 +104,7 @@ export function extrairHidrantesDaRota(rotas: MinhaRota[]): HidranteDaRota[] {
     const paradas = item.paradas.slice().sort(
       (a, b) =>
         a.created_at.localeCompare(b.created_at) ||
-        a.hidrante_id - b.hidrante_id ||
-        a.ordem_servico_key.localeCompare(b.ordem_servico_key),
+        a.hidrante_id - b.hidrante_id,
     )
 
     paradas.forEach((parada, indice) => {
@@ -125,7 +124,7 @@ export function extrairHidrantesDaRota(rotas: MinhaRota[]): HidranteDaRota[] {
         status: parada.status,
         paradaKey: parada.paradaKey,
         rotaId: parada.rota_id,
-        ordemServico: parada.ordem_servico,
+        ordensServico: parada.ordens_servico,
       })
     })
   }

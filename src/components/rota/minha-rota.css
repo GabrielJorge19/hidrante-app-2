@@ -352,6 +352,20 @@
   gap: 8px;
 }
 
+.parada-navegacao {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 100%;
+}
+
+.parada-navegacao .sheet-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .minha-rota-confirma {
   display: flex;
   flex-direction: column;

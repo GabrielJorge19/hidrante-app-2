@@ -37,18 +37,11 @@ export function problemasDoTipo(tipo?: string | null): TipoProblema[] {
   return COMUNS
 }
 
-/** Pasta da OS no bucket. Sem OS, o caminho usa "_". */
-export function pastaDaOs(ordemServico: string | null): string {
-  const limpa = ordemServico?.trim()
-  return limpa ? limpa : '_'
-}
-
 export function caminhosDasFotos(
   rotaId: number,
   hidranteId: number,
-  ordemServico: string | null,
   quantidade: number,
 ): string[] {
-  const prefixo = `${rotaId}/${hidranteId}/${pastaDaOs(ordemServico)}`
+  const prefixo = `${rotaId}/${hidranteId}`
   return Array.from({ length: quantidade }, (_, indice) => `${prefixo}/${indice + 1}.jpg`)
 }

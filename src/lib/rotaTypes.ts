@@ -30,9 +30,15 @@ export interface RotaCache {
   cachedAt: number
 }
 
+/** OS do ativo, lida na view. Não identifica a parada. */
+export interface OrdemServicoDaParada {
+  ordem_servico: string
+  status: string
+}
+
 /** Parada guardada no dispositivo, já com os dados do hidrante. */
 export interface RotaParadaCache {
-  /** Chave composta: rota + hidrante + ordem de serviço. */
+  /** Chave da parada: rota + hidrante. */
   paradaKey: string
   rota_id: number
   hidrante_id: number
@@ -41,10 +47,8 @@ export interface RotaParadaCache {
   bairro: string | null
   distrito: string | null
   subprefeitura: string | null
-  ordem_servico: string | null
-  ordem_servico_key: string
+  ordens_servico: OrdemServicoDaParada[]
   tipo: string | null
-  os_status: string | null
   status: ParadaStatus
   observacao: string | null
   latitude: number
@@ -64,7 +68,6 @@ export interface ParadaPendente {
   paradaKey: string
   rotaId: number
   hidranteId: number
-  ordemServico: string | null
   status: ParadaStatus
   observacao: string | null
   latitude: number | null

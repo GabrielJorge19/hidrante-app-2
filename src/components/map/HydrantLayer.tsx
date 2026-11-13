@@ -4,7 +4,7 @@ import 'leaflet.markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { DEFAULT_SAVED_COLOR } from '../../lib/savedTypes'
-import type { ParadaStatus } from '../../lib/rotaTypes'
+import type { ParadaStatus, OrdemServicoDaParada } from '../../lib/rotaTypes'
 import type { Hidrante, SavedHidrante } from '../../lib/types'
 
 /** Mesmas cores do mapa de rota no painel. */
@@ -22,7 +22,7 @@ export interface MarcadorServico {
   status: ParadaStatus
   paradaKey: string
   rotaId: number
-  ordemServico: string | null
+  ordensServico: OrdemServicoDaParada[]
 }
 
 interface HydrantLayerProps {

@@ -98,7 +98,7 @@ function HidranteApp() {
       status: parcial.status,
       paradaKey: parcial.paradaKey,
       rotaId: parcial.rotaId,
-      ordemServico: parcial.ordemServico,
+      ordensServico: parcial.ordensServico,
     }))
   }, [focusedHidrante, nearby, minhaRota.hidrantesDaRota, hidrantes])
 

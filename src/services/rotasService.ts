@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { caminhosDasFotos, type TipoProblema } from '../lib/problemas'
 import type {
   MinhaRota,
+  OrdemServicoDaParada,
   ParadaPendente,
   ParadaStatus,
   PosicaoAtual,
@@ -30,9 +31,7 @@ type LinhaParada = {
   distrito: string | null
   subprefeitura: string | null
   tipo: string | null
-  ordem_servico: string | null
-  ordem_servico_key: string
-  os_status: string | null
+  ordens_servico: OrdemServicoDaParada[] | null
   item_status: ParadaStatus
   observacao: string | null
   latitude: number
@@ -59,10 +58,8 @@ function normalizarParada(linha: LinhaParada): RotaParadaCache {
     bairro: linha.bairro,
     distrito: linha.distrito,
     subprefeitura: linha.subprefeitura,
-    ordem_servico: linha.ordem_servico,
-    ordem_servico_key: linha.ordem_servico_key,
+    ordens_servico: Array.isArray(linha.ordens_servico) ? linha.ordens_servico : [],
     tipo: linha.tipo ?? null,
-    os_status: linha.os_status,
     status: linha.item_status,
     observacao: linha.observacao,
     latitude: linha.latitude,
@@ -84,10 +81,15 @@ async function aplicarPendentes(
   if (pendentes.length === 0) return paradas
 
   const ordenadas = pendentes.slice().sort((a, b) => a.criadoEm - b.criadoEm)
-  const porParada = new Map(ordenadas.map((p) => [p.paradaKey, p]))
+  const porChave = new Map(ordenadas.map((pendente) => [pendente.paradaKey, pendente]))
+  const porParada = new Map(
+    ordenadas.map((pendente) => [`${pendente.rotaId}-${pendente.hidranteId}`, pendente]),
+  )
 
   return paradas.map((parada) => {
-    const pendente = porParada.get(parada.paradaKey)
+    const pendente =
+      porChave.get(parada.paradaKey) ??
+      porParada.get(`${parada.rota_id}-${parada.hidrante_id}`)
     if (!pendente) return parada
 
     return {
@@ -125,7 +127,13 @@ async function lerCache(): Promise<MinhaRota[]> {
     db.paradasPendentes.toArray(),
   ])
 
-  const paradasComPendentes = await aplicarPendentes(paradas, pendentes)
+  const paradasComPendentes = await aplicarPendentes(
+    paradas.map((parada) => ({
+      ...parada,
+      ordens_servico: Array.isArray(parada.ordens_servico) ? parada.ordens_servico : [],
+    })),
+    pendentes,
+  )
 
   return rotas
     .slice()
@@ -169,7 +177,7 @@ export async function carregarMinhasRotas(
       supabase
         .from('vw_rotas_itens')
         .select(
-          'rota_id, parada_key, hidrante_id, ativo, endereco, bairro, distrito, subprefeitura, tipo, ordem_servico, ordem_servico_key, os_status, item_status, observacao, latitude, longitude, checkin_at, checkin_lat, checkin_lng, concluido_em, problema_reportado_em, created_at',
+          'rota_id, parada_key, hidrante_id, ativo, endereco, bairro, distrito, subprefeitura, tipo, ordens_servico, item_status, observacao, latitude, longitude, checkin_at, checkin_lat, checkin_lng, concluido_em, problema_reportado_em, created_at',
         )
         .eq('encarregado_id', usuarioId)
         .order('created_at', { ascending: true })
@@ -234,13 +242,12 @@ export async function marcarParada(params: {
   paradaKey: string
   rotaId: number
   hidranteId: number
-  ordemServico: string | null
   status: ParadaStatus
   problemaTipo?: TipoProblema
   observacao?: string
   fotos?: Blob[]
 }): Promise<{ enviado: boolean }> {
-  const { paradaKey, rotaId, hidranteId, ordemServico, status, problemaTipo, observacao, fotos } = params
+  const { paradaKey, rotaId, hidranteId, status, problemaTipo, observacao, fotos } = params
 
   if (status === 'nao_realizado') {
     if (!problemaTipo || !fotos || fotos.length < 1 || fotos.length > 3) {
@@ -254,7 +261,6 @@ export async function marcarParada(params: {
       paradaKey,
       rotaId,
       hidranteId,
-      ordemServico,
       status,
       observacao: null,
       latitude: null,
@@ -277,13 +283,12 @@ export async function marcarParada(params: {
       await enviarProblema({
         rotaId,
         hidranteId,
-        ordemServico,
         problemaTipo,
         observacao,
         fotos,
       })
     } else {
-      await enviarParada({ rotaId, hidranteId, ordemServico, status })
+      await enviarParada({ rotaId, hidranteId, status })
     }
     await atualizarCacheParada(paradaKey, status)
     await db.paradasPendentes.where('paradaKey').equals(paradaKey).delete()
@@ -301,7 +306,6 @@ export async function marcarParada(params: {
 async function enviarProblema(params: {
   rotaId: number
   hidranteId: number
-  ordemServico: string | null
   problemaTipo: TipoProblema
   observacao?: string | null
   fotos: Blob[]
@@ -313,7 +317,6 @@ async function enviarProblema(params: {
   const caminhos = caminhosDasFotos(
     params.rotaId,
     params.hidranteId,
-    params.ordemServico,
     params.fotos.length,
   )
 
@@ -330,7 +333,6 @@ async function enviarProblema(params: {
   const { error } = await supabase.rpc('reportar_problema', {
     p_rota_id: params.rotaId,
     p_hidrante_id: params.hidranteId,
-    p_ordem_servico: params.ordemServico,
     p_tipo_problema: params.problemaTipo,
     p_observacao: params.observacao?.trim() || null,
     p_reportado_em:
@@ -346,7 +348,6 @@ async function enviarProblema(params: {
 async function enviarParada(params: {
   rotaId: number
   hidranteId: number
-  ordemServico: string | null
   status: ParadaStatus
   /** Horário em que a conclusão foi feita no dispositivo (fila offline). */
   concluidoEm?: number | null
@@ -356,7 +357,6 @@ async function enviarParada(params: {
   const { error } = await supabase.rpc('marcar_parada', {
     p_rota_id: params.rotaId,
     p_hidrante_id: params.hidranteId,
-    p_ordem_servico: params.ordemServico,
     p_status: params.status,
     p_observacao: null,
     p_lat: null,
@@ -388,7 +388,6 @@ export async function sincronizarPendencias(): Promise<number> {
         await enviarProblema({
           rotaId: pendente.rotaId,
           hidranteId: pendente.hidranteId,
-          ordemServico: pendente.ordemServico,
           problemaTipo: pendente.problemaTipo,
           observacao: pendente.problemaObservacao,
           fotos: pendente.fotos,
@@ -398,7 +397,6 @@ export async function sincronizarPendencias(): Promise<number> {
         await enviarParada({
           rotaId: pendente.rotaId,
           hidranteId: pendente.hidranteId,
-          ordemServico: pendente.ordemServico,
           status: pendente.status,
           concluidoEm:
             pendente.status === 'concluido' ? pendente.criadoEm : null,

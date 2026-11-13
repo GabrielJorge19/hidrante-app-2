@@ -25,6 +25,10 @@ interface FotoEscolhida {
 /** Altura máxima do campo de observação antes de começar a rolar. */
 const ALTURA_MAXIMA_OBSERVACAO = 120
 
+function bombeirosUrl(id: number): string {
+  return `https://cbaplang.corpodebombeiros.sp.gov.br/hidrantes/03individual/${id}.html`
+}
+
 export default function ServicoSheet({
   open,
   servico,
@@ -79,7 +83,6 @@ export default function ServicoSheet({
         paradaKey: servico.paradaKey,
         rotaId: servico.rotaId,
         hidranteId: servico.hidrante.id,
-        ordemServico: servico.ordemServico,
         status,
       })
       setConfirmando(null)
@@ -109,7 +112,6 @@ export default function ServicoSheet({
         paradaKey: servico.paradaKey,
         rotaId: servico.rotaId,
         hidranteId: servico.hidrante.id,
-        ordemServico: servico.ordemServico,
         status: 'nao_realizado',
         problemaTipo: tipoProblema,
         observacao: observacao.trim() || undefined,
@@ -187,9 +189,12 @@ export default function ServicoSheet({
           <p className="minha-rota-meta">
             Subprefeitura: {hidrante.subprefeitura || '—'}
           </p>
-          {servico.ordemServico && (
-            <p className="minha-rota-meta">OS {servico.ordemServico}</p>
-          )}
+          {servico.ordensServico.length > 0 &&
+            servico.ordensServico.map((ordem) => (
+              <p key={ordem.ordem_servico} className="minha-rota-meta">
+                OS {ordem.ordem_servico} · {ordem.status}
+              </p>
+            ))}
           <p className="minha-rota-meta">
             Situação: {ROTULO_PARADA_STATUS[servico.status]}
           </p>
@@ -327,14 +332,39 @@ export default function ServicoSheet({
                   </button>
                 </>
               ))}
-            <button
-              type="button"
-              className="sheet-button wide"
-              onClick={() => void irPara()}
-              disabled={processando}
-            >
-              Ir para
-            </button>
+            <div className="parada-navegacao">
+              <a
+                className="sheet-button"
+                href={bombeirosUrl(hidrante.id)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M14 4h6v6" />
+                  <path d="M20 4L10 14" />
+                  <path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5" />
+                </svg>
+                Ficha Bombeiros
+              </a>
+              <button
+                type="button"
+                className="sheet-button"
+                onClick={() => void irPara()}
+                disabled={processando}
+              >
+                Ir para
+              </button>
+            </div>
           </div>
         </div>
       )}
